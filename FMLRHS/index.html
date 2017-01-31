@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>School sports | FMLRHS by Thor Lancaster</title>
+		<link type="text/css" rel="stylesheet" href="default.css">
+		<div id="fb-root"></div>
+		<script>
+			window.setTimeout(function(){(function(d, s, id) { var js, fjs = d.getElementsByTagName(s)[0];  if (d.getElementById(id)) return;  js = d.createElement(s); js.id = id;  js.src = "//connect.facebook.net/en_US/sdk.js#xfbml=1&version=v2.8";  fjs.parentNode.insertBefore(js, fjs);}(document, 'script', 'facebook-jssdk'));},2);
+		</script>
+	</head>
+	<body class="noselect" onClick="MChandler()">
+		<div id="overlay" style="display: none">
+			<div id="modal">
+				<div id="modalTitlebar">
+					<a id="modaltitletext" class="unstyled">Title</a>
+					<a class="unstyled" onclick="closeModalWindow()">X</a>
+				</div>
+				<div id="modalcontent">
+					Modal Content
+				</div>
+			</div>
+		</div>
+		<div id="topSpacer"><br/></div>
+		<h1 id="teamName">|</h1>
+		<div id="main">
+			<div class="szcontainer" id="crossCountry">
+				<h2>
+					Cross Country
+					<button class = "shbtn" onclick="ss247.showSeason(0)">Show</button>
+					<button class = "shbtn" onclick="ss247.hideSeason(0)">Hide</button>
+				</h2>
+				<ul class="season">
+					<li>|</li>
+				</ul>
+				<div class="vheight"></div>
+			</div>
+			<div class="szcontainer" id="football">
+				<h2>
+					Football
+					<button class = "shbtn" onclick="ss247.showSeason(1)">Show</button>
+					<button class = "shbtn" onclick="ss247.hideSeason(1)">Hide</button>
+				</h2>
+				<ul class="season">
+					<li>|</li>
+				</ul>
+				<div class="vheight"></div>
+			</div>
+			<div class="szcontainer" id="volleyball">
+				<h2>
+					Volleyball
+					<button class = "shbtn" onclick="ss247.showSeason(2)">Show</button>
+					<button class = "shbtn" onclick="ss247.hideSeason(2)">Hide</button>
+				</h2>
+				<ul class="season">
+					<li>|</li>
+				</ul>
+				<div class="vheight"></div>
+			</div>
+			<div class="szcontainer" id="basketball">
+				<h2>
+					Basketball
+					<button class = "shbtn" onclick="ss247.showSeason(3)">Show</button>
+					<button class = "shbtn" onclick="ss247.hideSeason(3)">Hide</button>
+				</h2>
+				<ul class="season">
+					<li>|</li>
+				</ul>
+				<div class="vheight"></div>
+			</div>
+			<div class="szcontainer" id="track">
+				<h2>
+					Track
+					<button class = "shbtn" onclick="ss247.showSeason(4)">Show</button>
+					<button class = "shbtn" onclick="ss247.hideSeason(4)">Hide</button>
+				</h2>
+				<ul class="season">
+					<li>|</li>
+				</ul>
+				<div class="vheight"></div>
+			</div>
+		</div>
+		<br/>
+		<div class="fb-share-button" data-href="http://schoolsports247.blogspot.com" data-layout="button_count" data-size="small" data-mobile-iframe="true"><a class="fb-xfbml-parse-ignore" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fdevelopers.facebook.com%2Fdocs%2Fplugins%2F&amp;src=sdkpreparse">Share</a></div>
+		<div style="height: 80px"></div>
+		<div id="contextmenu" style="display:none">
+			FMLRHS<br/>By Thor Lancaster<hr/><a href="widget.html">Get the widget</a><hr/>CTRL+right click<br/>for more options
+		</div>
+		<base target="_blank" />
+			School Sports 24/7 by Thor Lancaster  |  Powered by <a href="http://www.github.com">Github</a>  |  <span id="loginStyle"><a href="http://thorlancaster.github.io/GETSOME">Redhawk team login</a></span>
+		</base>
+		<div style="height: 130px"></div>
+		<script src="schoolsports247.js"></script>
+		<script>
+			ss247 = new SS247();
+			ss247.setQNAME(ss247);
+			ss247.setup();
+			ssloader = new SSLoader();
+			ssloader.setQNAME(ssloader);
+			ssloader.load("manifest.txt");
+			ssloader.setup();
+		</script>
+	</body>
+</html>

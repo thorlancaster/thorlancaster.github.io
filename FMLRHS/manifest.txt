@@ -1,0 +1,5 @@
+Froid-Medicine Lake Redhawks
+FF0000
+FFFFFF
+FML/license.txt
+FML/team.txt

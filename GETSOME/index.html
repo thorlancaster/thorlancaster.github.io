@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<script src="Nhaler.js"></script>
+		<script src="Ncrypt.js"></script>
+	</head>
+	<body onLoad="Nhale()" style="margin:0px; overflow:hidden">
+	<canvas id="Ncanvas" data-processing-sources = "Nplayer.pde.locked">
+		Canvas element not supported. Please use Firefox, Google Chrome, Safari, or Opera to view this page (Not Internet explorer).
+	</canvas>
+	<script id="PJS" src="processing.js"></script>
+	<br/>
+	<button id="PPBTN" onClick="Processing.getInstanceById('Ncanvas').CpausePlay()">Pause play</button>
+	<button id="RSBTN" onClick="Processing.getInstanceById('Ncanvas').CrestartPlay()">Restart play</button>
+	<!--<button id="RSBTN">Auto-pause</button> -->
+	<br/>
+	<div id="plays">
+	<button onClick="Processing.getInstanceById('Ncanvas').CloadPlayEncrypted(0)">0</button>
+	</div>
+	</body>
+</html>
+

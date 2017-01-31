@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<script src="realclear.js"></script>
+		<link type="text/css" rel="stylesheet" href="realclear.css">
+	</head>
+	<body bgcolor="#FFFFFF" onload="RCinit()" onResize="RCresize()" class="noselect" onMouseUp="clearMouse()" onMouseEnter="clearMouse()">
+		<canvas id="RCcanvas"></canvas>
+		<div class="toolbar">
+			<strong>
+				<p id="RCHteam">
+					Redhawks
+					<score id="HRCdetails">0</score>
+				</p>
+				<p id="RCGteam">
+					Guest
+					<score id="GRCdetails">0</score>
+				</p>
+			</strong>
+			<div id="fullscreen" >
+				<img src="fullscreen.png" alt="full screen" width=100% height=100% onClick="fullscreen(document.documentElement)">
+			</div>
+		</div>
+		<div id="RCmouse">
+			Home Score<br/>Guest Score
+		</div>
+		<div id="RCMline">
+		</div>
+		<div id="RCMshade">
+		</div>
+		<div id="RCfontSize">
+		...
+		</div>
+	</body>
+</html>

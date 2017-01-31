@@ -1,0 +1,448 @@
+PImage court;
+PImage ball;
+int stopper = 0;
+String[] playPath;
+String Pbtns = "";
+void setup()
+{
+  size(window.innerWidth, window.innerHeight*0.7);
+  court = loadImage("court.png");
+  ball = loadImage("ball.png");
+  BBP_setup();
+  playPath = loadStrings("plays/plays.list");
+  for(int x = 0; x < playPath.length; x++)
+  {
+    Pbtns = (Pbtns + "<button onClick='Processing.getInstanceById("+"\"Ncanvas\""+").CloadPlayEncrypted("+x+")'>"+playPath[x].split(":")[1]+"</button>");
+	playPath[x] = playPath[x].split(":")[0];
+  }
+  document.getElementById("plays").innerHTML = Pbtns;
+  frameRate(30);
+}
+void draw()
+{
+  if(window.innerWidth != width || window.innerHeight!= height*0.7)
+    size(window.innerWidth, window.innerHeight*0.7);
+  BBplay_loop();
+  stopper--;
+  if(stopper == 0)
+  BBPcontinuous = false;
+}
+String[] play;
+String statusBar = "ready";
+BBteam team;
+void BBP_setup()
+{
+  team = new BBteam(0xFFFFFFFF);
+  team.setColors(new int[]{0xFFFF0066, 0xFFFFFF00, 0xFF00FF00, 0xFF00FFFF, 0xFF0000FF});
+  play = enumeratePlay(decrypt(loadStrings("plays/1.bbx.locked"),PASSWORD));
+  team.startPlay(play[0]);
+}
+int stemp = 0;
+float ZXS = -0;
+float ZYS = -0;
+float ZXW = 64;
+float ZYW = 32;
+boolean waiting = false;
+boolean ready = true;
+int step = 1; // the first line initializes the play
+int lastWait = 0;
+int currWait = 0;
+boolean BBPcontinuous = true;
+String[] BBP_playlist;
+boolean BBPselectionMode = false;
+void BBplay_loop()
+{
+  try
+  {
+    if (BBPselectionMode)
+    {
+      BBPselectionMode = false;
+      play = enumeratePlay(loadStrings("plays/1.bbx"));
+      team.startPlay(play[0]);
+      lastWait = 0;
+      currWait = 0;
+      step = 1;
+    }
+    image(court, 0, 0, width, height);
+    renderBBteam(team, 0, 0, width, height);
+    if (play[step].equals("wait"))
+    {
+      step++;
+      if (step >= play.length)
+      {
+	    if(team.ready && !team.notReady)
+		{
+			team.startPlay(play[0]);
+			step = 1;
+			lastWait = 0;
+			currWait = 0;
+		}
+		else
+			step--;
+      } else
+      {
+        lastWait = currWait;
+        currWait = step;
+        team.ready = false;
+        ready = false;
+        //println("waiting on " + step + "  from "+lastWait+" to "+currWait);
+        //println(step+": Will execute "+play[step]);
+      }
+    }
+    if (lastWait == currWait && (BBPcontinuous || step < 4))
+      team.executePlay(play[step]);
+    team.notReady = false;
+    for (int x = lastWait; x < currWait; x++)
+    {
+	if(BBPcontinuous || step < 4)
+      team.executePlay(play[x]);
+	else
+	   notReady = true;
+      //println(play[x]);
+    }
+    if (team.notReady)
+      team.ready = false;
+    if (team.ready && step < play.length-1)
+    {
+      if (ready)
+        step++;
+      //println(step+": executing "+play[step]);
+    }
+    if (team.ready && step == play.length-1)
+    {
+      if (ready)
+      {
+        team.startPlay(play[0]);
+        step = 1;
+        lastWait = 0;
+        currWait = 0;
+      } else
+        indicatePause();
+    }
+    if (ready)
+      statusBar = "ready";
+    else if (!team.ready)
+      statusBar = "running";
+    else
+      statusBar = "paused     0 to resume";
+
+    if (BBPcontinuous)
+      makeReady();
+  }
+  catch(Exception e)
+  {
+    BBP_setup();
+    throw e;
+  }
+}
+
+
+
+
+
+void makeReady() {
+  if (!ready && team.ready)
+    ready = true;
+}
+
+
+class BBteam
+{
+  PApplet parentObject;
+  int speed = 7;
+  int passSpeed = 8;
+  int shootSpeed = 16;
+  int[] px = new int[5];
+  int[] py = new int[5];
+  int[] c = new int[5];
+  int ballColor = 0xFFFFFFFF;
+  int looseBallColor = 0xFFFFFFFF;
+  int ballX = -1000;
+  int ballY = -1000;
+  boolean ready = false;
+  boolean notReady = true;
+  int basketX = 85;
+  int basketY = 500;
+  int TPX = 0;
+  int TPY = 0;
+
+  BBteam(int tcolor)
+  {
+    for (int x = 0; x < 5; x++)
+    {
+      px[x] = 400;
+      py[x] = 250+100*x;
+      c[x] = tcolor;
+    }
+  }
+  void setColors(int [] cNptr)
+  {
+    c = cNptr;
+  }
+  void startPlay(String play)
+  {
+    String[] ppos = play.split(";");
+    try {
+      for (int x = 0; x < 5; x++)
+      {
+        px[x] = parseInt(ppos[x].split(",")[0]);
+        py[x] = parseInt(ppos[x].split(",")[1]);
+      }
+    }
+    catch(Exception e)
+    {
+      e.printStackTrace();
+    }
+  }
+  void executePlay(String play)
+  { // remember that player 1 is array[0]
+    if (play.equals(""))
+    {
+      ready = true;
+      return;
+    } else if (play.indexOf(";") > 0)
+      startPlay(play);
+    else if (play.equals("wait") || play.indexOf("//") == 0)
+    {
+    } else if (play.indexOf("ball,") == 0)
+    {
+      ready = true;
+      int pnbr = parseInt(play.split(",")[1])-1;
+      if (ballX == px[pnbr] && ballY == py[pnbr])
+        ready = true;
+      ballX = px[pnbr];
+      ballY = py[pnbr];
+    } else if (parseInt(play.substring(0, 1)) > 0) // for player-specific actions
+    {
+      int actor = (parseInt(play.substring(0, 1)))-1;
+      int actend = (parseInt(play.substring(play.length()-1)))-1;
+      String action = play.substring(2, play.length()-1);
+      if (action.equals("scr")) // actor screens actend
+      {
+        if (abs(px[actend] - px[actor])<speed+18 && abs(py[actend] - py[actor])<speed+18)
+        {
+          //px[actor] = px[actend];
+          //py[actor] = py[actend];
+          ready = true;
+        } else // screens don't run players over
+        {
+          notReady = true;
+          TPX = speed;
+          TPY = speed;
+          if (px[actor] != px[actend] && py[actor] != py[actend])
+          {
+            if (abs(px[actor]-px[actend]) > abs(py[actor]-py[actend]))
+              TPY = abs(speed*(py[actor]-py[actend])/(px[actor]-px[actend]));
+
+            if (abs(py[actor]-py[actend]) > abs(px[actor]-px[actend]))
+              TPX = abs(speed*(px[actor]-px[actend])/(py[actor]-py[actend]));
+          }
+          if (px[actor] > px[actend])
+            px[actor] = px[actor]-TPX;
+          if (py[actor] > py[actend])
+            py[actor] = py[actor]-TPY;
+          if (px[actor] < px[actend])
+            px[actor] = px[actor]+TPX;
+          if (py[actor] < py[actend])
+            py[actor] = py[actor]+TPY;
+        }
+      } else if (play.split(",").length == 3)
+      {
+        int Xtarg = parseInt(play.split(",")[1]);
+        int Ytarg = parseInt(play.split(",")[2]);
+        TPX = speed;
+        TPY = speed;
+        if (px[actor] != Xtarg && py[actor] != Ytarg)
+        {
+          if (abs(px[actor]-Xtarg) > abs(py[actor]-Ytarg))
+            TPY = abs(speed*(py[actor]-Ytarg)/(px[actor]-Xtarg));
+
+          if (abs(py[actor]-Ytarg) > abs(px[actor]-Xtarg))
+            TPX = abs(speed*(px[actor]-Xtarg)/(py[actor]-Ytarg));
+        }
+        if (px[actor] > Xtarg)
+          px[actor] = px[actor]-TPX;
+        if (py[actor] > Ytarg)
+          py[actor] = py[actor]-TPY;
+        if (px[actor] < Xtarg)
+          px[actor] = px[actor]+TPX;
+        if (py[actor] < Ytarg)
+          py[actor] = py[actor]+TPY;
+        if (abs(Xtarg - px[actor])<passSpeed && abs(Ytarg-py[actor])<speed)
+        {
+          ready = true;
+          px[actor] = Xtarg;
+          py[actor] = Ytarg;
+        } else
+        {
+          notReady = true;
+        }
+      } //else
+      //println("unknown player-action: "+action);
+    } else if (play.indexOf("pass,") == 0)
+    {
+      int actend = parseInt(play.substring(play.length()-1))-1;
+
+      TPX = passSpeed;
+      TPY = passSpeed;
+      if (ballX != px[actend] && ballY != py[actend])
+      {
+        if (abs(ballX-px[actend]) > abs(ballY-py[actend]))
+          TPY = abs(passSpeed*(ballY-py[actend])/(ballX-px[actend]));
+
+        if (abs(ballY-py[actend]) > abs(ballX-px[actend]))
+          TPX = abs(passSpeed*(ballX-px[actend])/(ballY-py[actend]));
+      }
+      if (ballX < px[actend])
+        ballX+=TPX;
+      if (ballX > px[actend])
+        ballX-=TPX;
+      if (ballY < py[actend])
+        ballY+=TPY;
+      if (ballY > py[actend])
+        ballY-=TPY;
+      if (abs(ballX - px[actend])<passSpeed && abs(ballY-py[actend])<passSpeed)
+      {
+        ready = true;
+        ballX = px[actend];
+        ballY = py[actend];
+      } else
+        notReady = true;
+    } else if (play.indexOf("shoot") == 0)
+    {
+      TPX = shootSpeed;
+      TPY = shootSpeed;
+      if(ballX <= 500)
+      {
+        if (ballX != basketX && ballY != basketY)
+        {
+          if (abs(ballX-basketX) > abs(ballY-basketY))
+            TPY = abs(shootSpeed*(ballY-basketY)/(ballX-basketX));
+ 
+          if (abs(ballY-basketY) > abs(ballX-basketX))
+            TPX = abs(shootSpeed*(ballX-basketX)/(ballY-basketY));
+	 }
+	  if (ballX < basketX)
+        ballX+=TPX;
+      if (ballX > basketX)
+        ballX-=TPX;
+      if (ballY < basketY)
+        ballY+=TPY;
+      if (ballY > basketY)
+        ballY-=TPY;
+      if (abs(ballX - basketX)<shootSpeed && abs(ballY-basketY)<shootSpeed)
+      {
+        ready = true;
+        ballX = basketX; 
+        ballY = basketY;
+      } else
+        notReady = true;
+      }
+      if(ballX > 500)
+      {
+        if (ballX != (1000-basketX) && ballY != basketY)
+        {
+          if (abs(ballX-(1000-basketX)) > abs(ballY-basketY))
+            TPY = abs(shootSpeed*(ballY-basketY)/(ballX-(1000-basketX)));
+ 
+          if (abs(ballY-basketY) > abs(ballX-(1000-basketX)))
+            TPX = abs(shootSpeed*(ballX-(1000-basketX))/(ballY-basketY));
+	 }
+	  if (ballX < (1000-basketX))
+        ballX+=TPX;
+      if (ballX > (1000-basketX))
+        ballX-=TPX;
+      if (ballY < basketY)
+        ballY+=TPY;
+      if (ballY > basketY)
+        ballY-=TPY;
+      if (abs(ballX - (1000-basketX))<shootSpeed && abs(ballY-basketY)<shootSpeed)
+      {
+        ready = true;
+        ballX = (1000-basketX); 
+        ballY = basketY;
+      } else
+        notReady = true;
+      }
+    } else if (play.indexOf("zoom,") == 0)
+    {
+      float zX = parseFloat(play.split(",")[1]);
+      float zY = parseFloat(play.split(",")[2]);
+      float zXW = parseFloat(play.split(",")[3]);
+      float zYW = parseFloat(play.split(",")[4]);
+      ZXS = zX;
+      ZYS = zY;
+      ZXW = zXW;
+      ZYW = zYW;
+      //println("zoom "+zX+","+zY+","+zXW+","+zYW);
+      ready = true;
+    } else
+    {
+      //println("unknown cmd: "+play);
+    }
+  }
+}
+
+
+
+String[] enumeratePlay(String[] play)
+{
+  String[] RTN = new String[play.length];
+  for (int x = 0; x < play.length; x++)
+  {
+    RTN[x] = play[x].replaceAll("elbow1", "240,350").replaceAll("block1", "115,350").replaceAll("elbow2", "240,650").replaceAll("block2", "115,650")
+      .replaceAll("elbow3", "760,350").replaceAll("block3", "885,350").replaceAll("elbow4", "760,650").replaceAll("block4", "885,650")
+      .replaceAll("inbound1", "40,330").replaceAll("inbound2", "40,670").replaceAll("inbound3", "960,330").replaceAll("inbound4", "960,670");
+  }
+  return RTN;
+}
+
+void renderBBteam(BBteam T, float Xs, float Ys, float Xw, float Yw)
+{
+  fill(255);
+  image(ball,T.ballX*Xw/1000-15, T.ballY*Yw/1000-15);
+  for (int x = 0; x < 5; x++)
+  {
+    fill(T.c[x]);
+    ellipse(T.px[x]*Xw/1000-5, T.py[x]*Yw/1000-5, 10, 10);
+  }
+}
+ 
+
+ String[] decrypt(String play, int password)
+ {
+   return Tea.decrypt(play, password).split(" ");
+ }
+ 
+ void indicatePause()
+ {
+ }
+ 
+ void CloadPlayEncrypted(int number)
+ {
+   play = enumeratePlay(decrypt(loadStrings("plays/"+playPath[number]),PASSWORD));
+   team.startPlay(play[0]);
+   CrestartPlay();
+ }
+ 
+ void CpausePlay()
+ {
+	BBPcontinuous = !BBPcontinuous;
+	if(BBPcontinuous)
+	{
+		document.getElementById("PPBTN").innerHTML = "Pause Play";
+	}
+	else
+	{
+	    document.getElementById("PPBTN").innerHTML = "Resume Play";
+	}
+ }
+ void CrestartPlay()
+ {
+	lastWait = 0;
+	currWait = 0;
+	step = 1;
+	BBPcontinuous = true;
+	document.getElementById("PPBTN").innerHTML = "Resume Play";
+	stopper = 6;
+ }
