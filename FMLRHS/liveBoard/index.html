@@ -1,0 +1,227 @@
+<html>
+	<head>
+		<title id="title">JScoreboard</title>
+		<style type="text/css">
+		body{
+	background-color: black;
+	color: white;
+}
+div#scoreboard{
+	background-color: #222222;
+	width: 60%;
+	height: 100%;
+	margin: auto;
+	border-radius: 3vmin;
+}
+div#clock{
+	margin: auto;
+	font-size: 10vw;
+	color: #FFFF99;
+	background-color: #000000;
+	text-shadow: 0px 0px 2vh #FF0000,0px 0px 2vh #FF0000,0px 0px 2vh #FF0000;
+	text-align: center;
+	width: 25vw;
+	box-shadow: 0px 0px 1vh #0000FF;
+}
+div.score{
+	color: #FF0000;
+	text-shadow: 0px 0px 2vh #FFFFFF,0px 0px 2vh #FFFFFF,0px 0px 2vh #FFFFFF;
+	font-size: 12vw;
+	margin: 1vh;
+	position: relative;
+	top: -6vw;
+}
+#homescore{
+	float: left;
+}
+#guestscore{
+	float: right;
+}
+div.foul{
+	color: #FF0000;
+	text-shadow: 0px 0px 1vh #FFFF00;
+	font-size: 8vw;
+	margin: 1vh;
+	position: absolute;
+	width: 14vw;
+	text-align: center;
+	bottom: 0px;
+}
+#guestfoul{
+	right: 22vw;
+	margin-right: 1vw;
+}
+#homeFoul{
+	margin-left: 2vw;
+}
+div.teamname{
+	color: #FFFFFF;
+	background-color: #000000;
+	text-shadow: 0px 0px 4vh #FFFFFF;
+	font-size: 5vw;
+	margin: 1vh;
+	position: absolute;
+	width: 30%;
+	text-align: center;
+	top: 0px;
+	border-radius: 3vh;
+	box-shadow: 0px 0px 2vmin #FF0000;
+}
+#homename{
+	left: 0px;
+}
+#guestname{
+	right: 0px;
+}
+div#period{
+	position: relative;
+	top: 5vh;
+	margin: auto;
+	color: #FFFFFF;
+	font-size: 4vw;
+	text-align: center;
+	width: 20%;
+}
+div#poss{
+	position: relative;
+	top: 5vh;
+	margin: auto;
+	color: #FFFFFF;
+	font-size: 4vw;
+	text-align: center;
+	width: 30%;
+}
+.description{
+	font-size: 7vmin;
+}
+#homepfp{
+	top: 15vh;
+	left: 0px;
+}
+#guestpfp
+{
+	right: 0px;
+}
+div.pfp
+{   
+	color: #00FF74;
+	text-shadow: 0px 0px 0.1vmin #FFFFFF, 0px 0px 0.3vmin #FFFFFF;
+    overflow-y: auto;
+	background-color: #transparent;
+	position: absolute;
+	top: 15vh;
+	width: 20%;
+	height: 84vh;
+	font-size: 2.2vw;
+	text-align: center;
+}
+.noselect{
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+	cursor: default;
+}
+		</style>
+		<script>
+		var serverURL = "http://70.33.46.149";
+function scoreboard()
+{
+	setInterval(function(){ loadScores() }, 1000);
+}
+function loadScores()
+{
+	RCload(serverURL);
+}
+var RCloadRequest;
+function RCload(URL)
+{
+	RCloadRequest = new XMLHttpRequest();
+	RCloadRequest.addEventListener("load", RCloadCallback);
+	RCloadRequest.open("GET", URL);
+	RCloadRequest.send();
+}
+function RCloadCallback()
+{
+	var content = this.responseText;
+	var args = content.split(";");
+	for(var x = 0; x < args.length; x++)
+		args[x] = args[x].split(",");
+	//console.log(args);
+	
+	document.getElementById("homename").innerHTML = args[0][0];
+	document.getElementById("guestname").innerHTML = args[0][1];
+	
+	var temp = args[1][1];
+	if(temp.length == 1)
+		temp = "0"+temp;
+	document.getElementById("clock").innerHTML = args[1][0] + ":"+ temp;
+	
+	document.getElementById("homescore").innerHTML = args[2][0];
+	document.getElementById("guestscore").innerHTML = args[2][1];
+	
+	document.getElementById("period").innerHTML = "period<br/>"+args[3][0];
+	
+	document.getElementById("homefoul").innerHTML = "<div class='description'>Fouls</div>"+args[4][0];
+	document.getElementById("guestfoul").innerHTML = "<div class='description'>Fouls</div>"+args[4][1];
+	
+	document.getElementById("homepfp").innerHTML = 
+	 args[5][0]+" #"+args[5][1]+"<br/>"+args[5][2]+" fouls | "+args[5][3]+" points<hr>"
+	+args[6][0]+" #"+args[6][1]+"<br/>"+args[6][2]+" fouls | "+args[6][3]+" points<hr>"
+	+args[7][0]+" #"+args[7][1]+"<br/>"+args[7][2]+" fouls | "+args[7][3]+" points<hr>"
+	+args[8][0]+" #"+args[8][1]+"<br/>"+args[8][2]+" fouls | "+args[8][3]+" points<hr>"
+	+args[9][0]+" #"+args[9][1]+"<br/>"+args[9][2]+" fouls | "+args[9][3]+" points<hr>";
+	
+	document.getElementById("guestpfp").innerHTML = 
+	 args[10][0]+" #"+args[10][1]+"<br/>"+args[10][2]+" fouls | "+args[10][3]+" points<hr>"
+	+args[11][0]+" #"+args[11][1]+"<br/>"+args[11][2]+" fouls | "+args[11][3]+" points<hr>"
+	+args[12][0]+" #"+args[12][1]+"<br/>"+args[12][2]+" fouls | "+args[12][3]+" points<hr>"
+	+args[13][0]+" #"+args[13][1]+"<br/>"+args[13][2]+" fouls | "+args[13][3]+" points<hr>"
+	+args[13][0]+" #"+args[13][1]+"<br/>"+args[13][2]+" fouls | "+args[13][3]+" points<hr>";
+	
+	
+}
+		</script>
+	</head>
+	<body class="noselect" onLoad = "scoreboard()">
+		<div id="scoreboard">
+			<div id="clock">
+				--:--
+			</div>
+			<div class="teamname" id="homename">
+				Loading
+			</div>
+			<div class="teamname" id="guestname">
+				Scoreboard
+			</div>
+			<div class="score" id="homescore">
+				...
+			</div>
+			<div class="score" id="guestscore">
+				...
+			</div>
+			<div id="period">
+				Period ...
+			</div>
+			<br/>
+			<div id="poss">
+			</div>
+			<div class="foul" id="homefoul">
+				<div class="description">Fouls</div>
+				...
+			</div>
+			<div class="foul" id="guestfoul">
+				<div class="description">Fouls</div>
+				...
+			</div>
+		</div>
+		<div id="homepfp" class="pfp">
+			Loading...
+		</div>
+		<div id="guestpfp" class = "pfp">
+			Loading...
+		</div>
+	</body>
+</html>
