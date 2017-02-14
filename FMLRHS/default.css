@@ -35,7 +35,7 @@ ul.season{
 }
 ul.season li{
 	color: #88AAFF;
-	text-shadow: 1px 1px black;
+	text-shadow: 1px 1px black, 1px -1px black, -1px 1px black, -1px -1px black;
 }
 ul li{
 	display: inline-block;

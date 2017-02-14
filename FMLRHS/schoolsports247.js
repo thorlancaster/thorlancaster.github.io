@@ -215,7 +215,8 @@ try{
 		if(XHRLoadFinished()) // we've loaded the games, start the realClear
 		{
 			teamStack[2] = getLoadText();
-			//console.log(teamStack[2]);
+			for(var i = 0; i < teamStack[2].length; i++)
+				teamStack[2][i] = teamStack[2][i].replaceAll("<T>","&nbsp&nbsp&nbsp");
 			state++;
 			LNAME.load(teamStack[1][4]);
 		}
@@ -253,9 +254,9 @@ try{
 			{
 				Scontents.push(teamStack[4][x][y].split('<R>')[0]);
 				if(teamStack[4][x][y].split('<R>')[1].length > 1)
-				   teamStack[5][x].push("<br/><br/>"+teamStack[4][x][y].split('<R>')[1].replaceAll("<N>","<br/>"));
+				   teamStack[5][x].push("<br/><br/>"+teamStack[4][x][y].split('<R>')[1].replaceAll("<N>","<br/>").replaceAll("<T>","|&nbsp&nbsp&nbsp&nbsp"));
 			    else
-					teamStack[5][x].push(teamStack[4][x][y].split('<R>')[1].replaceAll("<N>","<br/>"));
+					teamStack[5][x].push(teamStack[4][x][y].split('<R>')[1].replaceAll("<N>","<br/>").replaceAll("<T>","|&nbsp&nbsp&nbsp&nbsp"));
 				teamStack[6][x].push(teamStack[4][x][y].split('<R>')[0]);
 			}
 			Scontents = "<li>"+Scontents.join("~").replaceAll("~","</li><br/><li>")+"</li>";
@@ -296,6 +297,13 @@ try{
 			}
 		}
 		state++;
+	}
+	if(state > 4 && state < 45)
+		state++;
+	if(state == 45 || state == 21)
+	{
+		state++;
+		window.scrollTo(0,document.body.scrollHeight);
 	}
 }
 catch(e)
