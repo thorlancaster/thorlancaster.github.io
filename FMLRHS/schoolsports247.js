@@ -215,6 +215,15 @@ try{
 		if(XHRLoadFinished()) // we've loaded the games, start the realClear
 		{
 			teamStack[2] = getLoadText();
+			//console.log(teamStack[2]);
+			for(var x = 0; x < teamStack[2].length; x++) // sanitize the file to prevent exceptions
+			{
+				if(teamStack[2][x].indexOf("<R>") < 0 && teamStack[2][x].indexOf("<S>") < 0)
+				{
+					console.log("BAD LINE: "+x);
+					teamStack[2][x] = teamStack[2][x]+"<R>";
+				}
+			}
 			for(var i = 0; i < teamStack[2].length; i++)
 				teamStack[2][i] = teamStack[2][i].replaceAll("<T>","&nbsp&nbsp&nbsp");
 			state++;
