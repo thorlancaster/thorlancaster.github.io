@@ -126,6 +126,10 @@ div.pfp
 }
 		</style>
 		<script>
+		var timestamp = "0";
+		var running = false;
+		var Prunning = false;
+		var bong = false;
 		var serverURL = "http://70.33.46.149";
 function scoreboard()
 {
@@ -141,7 +145,32 @@ function RCload(URL)
 	RCloadRequest = new XMLHttpRequest();
 	RCloadRequest.addEventListener("load", RCloadCallback);
 	RCloadRequest.open("GET", URL);
-	RCloadRequest.send();
+	RCloadRequest.send(); // move bong here
+	if(running)
+	{
+		execBong();
+	}
+}
+function execBong()
+{
+	var Ctext = document.getElementById("clock").innerHTML;
+	var minutes = parseInt(Ctext.split(":")[0]);
+	var seconds = parseInt(Ctext.split(":")[1]);
+	seconds--;
+	if(seconds < 0)
+	{
+		minutes--;
+		seconds = 59;
+	}
+	if(minutes < 0)
+	{
+		minutes = 0;
+		seconds = 0;
+	}
+	if(seconds < 10)
+		document.getElementById("clock").innerHTML = minutes+":0"+seconds;
+	else
+		document.getElementById("clock").innerHTML = minutes+":"+seconds;
 }
 function RCloadCallback()
 {
@@ -151,37 +180,54 @@ function RCloadCallback()
 		args[x] = args[x].split(",");
 	//console.log(args);
 	
-	document.getElementById("homename").innerHTML = args[0][0];
-	document.getElementById("guestname").innerHTML = args[0][1];
 	
-	var temp = args[1][1];
-	if(temp.length == 1)
-		temp = "0"+temp;
-	document.getElementById("clock").innerHTML = args[1][0] + ":"+ temp;
-	
-	document.getElementById("homescore").innerHTML = args[2][0];
-	document.getElementById("guestscore").innerHTML = args[2][1];
-	
-	document.getElementById("period").innerHTML = "period<br/>"+args[3][0];
-	
-	document.getElementById("homefoul").innerHTML = "<div class='description'>Fouls</div>"+args[4][0];
-	document.getElementById("guestfoul").innerHTML = "<div class='description'>Fouls</div>"+args[4][1];
-	
-	document.getElementById("homepfp").innerHTML = 
-	 args[5][0]+" #"+args[5][1]+"<br/>"+args[5][2]+" fouls | "+args[5][3]+" points<hr>"
-	+args[6][0]+" #"+args[6][1]+"<br/>"+args[6][2]+" fouls | "+args[6][3]+" points<hr>"
-	+args[7][0]+" #"+args[7][1]+"<br/>"+args[7][2]+" fouls | "+args[7][3]+" points<hr>"
-	+args[8][0]+" #"+args[8][1]+"<br/>"+args[8][2]+" fouls | "+args[8][3]+" points<hr>"
-	+args[9][0]+" #"+args[9][1]+"<br/>"+args[9][2]+" fouls | "+args[9][3]+" points<hr>";
-	
-	document.getElementById("guestpfp").innerHTML = 
-	 args[10][0]+" #"+args[10][1]+"<br/>"+args[10][2]+" fouls | "+args[10][3]+" points<hr>"
-	+args[11][0]+" #"+args[11][1]+"<br/>"+args[11][2]+" fouls | "+args[11][3]+" points<hr>"
-	+args[12][0]+" #"+args[12][1]+"<br/>"+args[12][2]+" fouls | "+args[12][3]+" points<hr>"
-	+args[13][0]+" #"+args[13][1]+"<br/>"+args[13][2]+" fouls | "+args[13][3]+" points<hr>"
-	+args[13][0]+" #"+args[13][1]+"<br/>"+args[13][2]+" fouls | "+args[13][3]+" points<hr>";
-	
-	
+	if(!(args[15][1] === timestamp))
+	{
+		timestamp = args[15][1];
+		//console.log(timestamp);
+		if(args[15][0].indexOf("t") == 0)
+			running = true;
+		else
+			running = false;
+		document.getElementById("homename").innerHTML = args[0][0];
+		document.getElementById("guestname").innerHTML = args[0][1];
+		
+		var temp = args[1][1];
+		if(temp.length == 1)
+			temp = "0"+temp;
+		if(Prunning & running);
+		else
+			document.getElementById("clock").innerHTML = args[1][0] + ":"+ temp;
+		
+		document.getElementById("homescore").innerHTML = args[2][0];
+		document.getElementById("guestscore").innerHTML = args[2][1];
+		
+		document.getElementById("period").innerHTML = "period<br/>"+args[3][0];
+		
+		document.getElementById("homefoul").innerHTML = "<div class='description'>Fouls</div>"+args[4][0];
+		document.getElementById("guestfoul").innerHTML = "<div class='description'>Fouls</div>"+args[4][1];
+		
+		document.getElementById("homepfp").innerHTML = 
+		args[5][0]+" #"+args[5][1]+"<br/>"+args[5][2]+" fouls | "+args[5][3]+" points<hr>"
+		+args[6][0]+" #"+args[6][1]+"<br/>"+args[6][2]+" fouls | "+args[6][3]+" points<hr>"
+		+args[7][0]+" #"+args[7][1]+"<br/>"+args[7][2]+" fouls | "+args[7][3]+" points<hr>"
+		+args[8][0]+" #"+args[8][1]+"<br/>"+args[8][2]+" fouls | "+args[8][3]+" points<hr>"
+		+args[9][0]+" #"+args[9][1]+"<br/>"+args[9][2]+" fouls | "+args[9][3]+" points<hr>";
+		
+		document.getElementById("guestpfp").innerHTML = 
+		args[10][0]+" #"+args[10][1]+"<br/>"+args[10][2]+" fouls | "+args[10][3]+" points<hr>"
+		+args[11][0]+" #"+args[11][1]+"<br/>"+args[11][2]+" fouls | "+args[11][3]+" points<hr>"
+		+args[12][0]+" #"+args[12][1]+"<br/>"+args[12][2]+" fouls | "+args[12][3]+" points<hr>"
+		+args[13][0]+" #"+args[13][1]+"<br/>"+args[13][2]+" fouls | "+args[13][3]+" points<hr>"
+		+args[14][0]+" #"+args[14][1]+"<br/>"+args[14][2]+" fouls | "+args[14][3]+" points<hr>";
+		bong = false;
+		Prunning = running;
+	}
+	else // if there ain't new data
+	{
+		bong = true;
+		//setTimeout(1000, execBong());
+	}
 }
 		</script>
 	</head>

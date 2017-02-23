@@ -91,7 +91,8 @@ Monday, Feb. 14: District Pep rally @ Froid<R><span style="font-size: 3em; backg
 <R>
 ------------------- Girls divisionals @ Wolf Point February 22-24 --------------------<R>
 <T>Girls bracket<R><img width="80%"src="FML/images/divbracket_girls.png">
-<T>7:00 Wednesday: North County<R>
-<T><T><T>WIN: 4:30 PM Thursday: Winner of MonDak and Bainville/Circle<R>
-<T><T><T>LOSE: 10:30 AM Thursday: Loser of MonDak and Bainvill/Circle<R>
+<T>7:00 Wednesday: North County [WIN]<R>Although trailing at first, the Redhawks turned North country into a fine mist by the end of the first half. North Country's biggest lead was 6-2 in the first quarter, and then the Redhawks got rolling and crushed the Mavericks.<N>The scores were done for halves, not quarters.  21-9, 22-19, 43-28 final<N><N>Paige Robertson: 19 points<N>Sydney Labatte: 2 points<N>Anistyn Young: 2 points<N>Sydney Dethman: 8 points<N>Morgan Mason: 3 points<N>Mackenzie Dethman: 7 points<N>Haley Labatte: 2 points
+<T>4:30 PM Thursday: MonDak<R>
+<R>
 <S>
+#end
