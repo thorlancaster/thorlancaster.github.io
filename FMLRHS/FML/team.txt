@@ -85,14 +85,13 @@ Monday, Feb. 14: District Pep rally @ Froid<R><span style="font-size: 3em; backg
 <R>
 -------------------- Boys divisionals @ Wolf Point February 23-25 --------------------<R>
 <T>Boys bracket<R><img width="80%" src="FML/images/divbracket_boys.png">
-<T>12:00 Thursday: Scobey<R>
-<T><T><T>WIN: 3:00 PM Friday: Winner of North Country and Fairview<R>
-<T><T><T>LOSE: 12:00 AM Friday: Loser of North Country and Fairview<R>
+<T>12:00 Thursday: Scobey [LOSS]<R>The Redhawks had a terrible first half, much like the Richey-Lambert game during Districts.<N>9-26, 27-30, 36-56 final<N><N>Coltin Danielson: 2 points<N>Jordan Anderson: 7 points<N>Nick Eylander: 1 point<N>Jacob Abar: 10 points<N>Sean Robinson: 14 points<N>Walker Ator: 1 poins<N>Jason Eylander: 1 point
+<T>12:00 AM Friday: Fairview [LOSER OUT]<R>
 <R>
 ------------------- Girls divisionals @ Wolf Point February 22-24 --------------------<R>
 <T>Girls bracket<R><img width="80%"src="FML/images/divbracket_girls.png">
 <T>7:00 Wednesday: North County [WIN]<R>Although trailing at first, the Redhawks turned North country into a fine mist by the end of the first half. North Country's biggest lead was 6-2 in the first quarter, and then the Redhawks got rolling and crushed the Mavericks.<N>The scores were done for halves, not quarters.  21-9, 22-19, 43-28 final<N><N>Paige Robertson: 19 points<N>Sydney Labatte: 2 points<N>Anistyn Young: 2 points<N>Sydney Dethman: 8 points<N>Morgan Mason: 3 points<N>Mackenzie Dethman: 7 points<N>Haley Labatte: 2 points
-<T>4:30 PM Thursday: MonDak<R>
+<T>4:30 PM Thursday: MonDak [WIN]<R>The game was a close one, with Mondak leading most of the way. During the 4th quarter, the Redhawks pulled ahead and won the game with the help of double-bonus.<N>16-16, 28-22, 44-38 final<N><N>Paige Robertson: 13 points<N> Sydney LaBatte: 2 points<N> Annistyn Young: 7 points<N>Sydney Dethman: 8 points<N>Morgan Mason: 5 points<N>MaKenzie Dethman: 9 points
 <R>
 <S>
 #end
