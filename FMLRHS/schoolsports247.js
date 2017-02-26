@@ -134,7 +134,7 @@ SS247.prototype.adjustSeason = function(season,position)
 	
 SS247.prototype.setup = function()
 {
-	window.setInterval(function(){QNAME.mainLoop()},17); // 60 FPS, 17
+	window.setInterval(function(){QNAME.mainLoop()},30); // 60 FPS, 17
 	window.setTimeout(function(){checkForMalware()},3000);
 	window.setTimeout(function(){checkForMalware()},7000);
 	seasonStatus = new Array(5);
