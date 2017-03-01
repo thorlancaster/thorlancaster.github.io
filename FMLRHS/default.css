@@ -109,9 +109,9 @@ div#modal{
 	text-align: left;
 	padding-left: 0.2em;
 	box-shadow: 10px 10px 20px #000000;
-	border: 1px solid #FF0000;
 	border: 1px solid #000000;
 	overflow-y: auto;
+	border-radius: 0.2em;
 }
 div#modalTitlebar {
 	text-align: right;
@@ -138,4 +138,11 @@ iframe{
 #loginStyle a{
 	font-size: 1.2em;
 	color: green;
+}
+@keyframes bNoticed {
+    0%  {color: #DDAAFF;}
+    25%  {color: #FFBBFF;}
+    50%  {color: #DDAAFF;}
+    75%  {color: #FFBBFF;}
+	100% {color: #DDAAFF;}
 }

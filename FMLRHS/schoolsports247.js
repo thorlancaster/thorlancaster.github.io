@@ -349,7 +349,7 @@ function sendLoadRequest(LUrl)
 }
 function XHRLoadFinished()
 {
-	return (xmlHttp.responseText!=null) && (xmlHttp.responseText.length > 10);
+	return (xmlHttp.responseText!=null) && (xmlHttp.readyState == 4);
 }
 function getLoadText()
 {
