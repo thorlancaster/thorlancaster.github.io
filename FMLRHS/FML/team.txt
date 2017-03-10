@@ -104,4 +104,15 @@ Monday, Feb. 14: District Pep rally @ Froid<R><span style="font-size: 3em; backg
 <T>Saturday, 11:30 AM: Roy-winnifred [WIN] [LOSER OUT]<R>The Redhawks won 46-42, overcoming Roy-Winifred's comeback.<N>11-3,  9-14,  9-9,  17-16,  46-42 final<N><N>Paige Robertson 7: points<N>Sydney Labatte: 1 point<N>Annistyn Young: 4 points<N>Sydney Dethman: 6 points<N>Tawnee Robertson: 4 points<N>Morgan Mason: 10 points<N>Mackenzie Dethman: 14 points
 <T>Saturday, 16:30 PM: Twin Bridges [LOSS] [END SEASON] [4th PLACE]<R>The Redhawks lost 40-45, coming in 4th at the state tournament.<N>11-17, 7-7, 11-12, 11-9,  40-45 final<N><N>Paige Robertson: 7 points<N>Sydney Labatte: 1 point<N>Anistyn Young: 4 points<N>Sydney Dethman: 6 points<N>Tawnee Robertson: 4 points<N>Morgan Mason: 10 points<N>Mackenzie Dethman: 14 points
 <S>
-#end
+Monday, Mar. 13, 4:00 PM: Practice starts<R>
+Saturday, Apr. 1, TBA_TBN: Glasgow Invite<R>
+Saturday, Apr. 8, TBA_TBN: Nashua Invite<R>
+Thursday, Apr. 13, TBA_TBN: Fairview Invite<R>
+Monday, Apr. 17, TBA_TBN: Scottie Qualifier<R>
+Saturday, Apr. 22, TBA_TBN: Sidney Invite<R>
+Tuesday, Apr. 25, TBA_TBN: Richey-Lambert Invite<R>
+Tuesday, May. 2, TBA_TBN: Top Ten @ Glasgow<R>
+Friday, May. 5, TBA_TBN: Wolf Point<R>
+Tuesday, May. 9, TBA_TBN: Districts @ Sidney<R>
+Thursday, May. 18, TBA_TBN: Divisionals @ Wolf Point<R>
+Fri.-Sat., May. 26-27, TBA_TBN: State @ Missoula<R>
