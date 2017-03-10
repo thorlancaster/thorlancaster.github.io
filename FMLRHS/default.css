@@ -14,6 +14,12 @@ body{
 	user-select: none;
 	cursor: default;
 }
+.cmelement:hover {
+	background-color: #FFFF09;
+}
+a:hover {
+	background-color: #FFFF00;
+}
 h2{
 	margin: 0px;
 	margin-left: 0.5em;
@@ -34,8 +40,14 @@ ul.season{
 	margin:0px;
 }
 ul.season li{
-	color: #88AAFF;
 	text-shadow: 1px 1px black, 1px -1px black, -1px 1px black, -1px -1px black;
+	animation-duration: 1s;
+	animation-iteration-count: 1;
+	color: #88AAFF;
+}
+@keyframes linkFade {
+	0%  {color: #00FF00;}
+	100% {color: #88AAFF;}
 }
 ul li{
 	display: inline-block;

@@ -201,7 +201,7 @@ try{
 				for(var i = 0; i < 5; i++)
 				{
 					if(teamStack[1][i+6].indexOf("0") > -1)
-						QNAME.hideSeason(i);
+						QNAME.hideSeasonImm(i);
 					else
 						QNAME.showSeason(i);
 				}
@@ -301,7 +301,7 @@ try{
 				{
 					items[y].style.cursor = "pointer";
 					items[y].style.textDecoration = "underline";
-					items[y].outerHTML = items[y].outerHTML.substring(0,3)+" onclick=\"showModalWindow("+x+","+y+")\" "+items[y].outerHTML.substring(3);
+					items[y].outerHTML = items[y].outerHTML.substring(0,3)+" onMouseOver='this.style.color=\"#0F0\"; this.style.animationName = \"\"' onMouseOut = 'this.style.animationName = \"linkFade\"; this.style.removeProperty(\"color\")'  onclick=\"showModalWindow("+x+","+y+")\" "+items[y].outerHTML.substring(3);
 				}
 				else
 				{
