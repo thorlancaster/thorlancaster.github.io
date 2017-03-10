@@ -216,10 +216,10 @@ try{
 		if(XHRLoadFinished()) // we've loaded the games, start the realClear
 		{
 			teamStack[2] = getLoadText();
-			if((!(teamStack[2][teamStack[2].length-1] === "#end")))
-			{
-				window.location.reload();
-			}
+//			if((!(teamStack[2][teamStack[2].length-1] === "#end")))
+//			{
+//				window.location.reload();
+//			}
 			//console.log(teamStack[2]);
 			for(var x = 0; x < teamStack[2].length; x++) // sanitize the file to prevent exceptions
 			{
