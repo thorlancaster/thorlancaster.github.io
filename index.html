@@ -1,12 +1,48 @@
 <!DOCTYPE html>
 <html>
 	<head>
-	
+		<style type="text/css">
+			#background
+		    {
+				position: fixed;
+				width: 100vw;
+				height: 150vh;
+			}
+		</style>
+		<script>
+			setInterval(function(){animate()}, 50);
+			var run = 0;
+			var direction = -0.1
+			var running = true;
+			function animate()
+			{
+				if(!running)
+					return;
+					
+				document.getElementById("background").style.top = run+"vh";
+				console.log(run+"vh");
+				run+=direction;
+				if(run < -50)
+					direction = Math.abs(direction);
+				if(run > 10)
+					direction = -Math.abs(direction);
+			}
+			function toggleAnimation()
+			{
+				running = !running;
+			}
+		</script>
 	</head>
-	<body style="font-size: 3em">
-		<a href="/FMLRHS"> School sports site</a><br/>
-		<a href="/oldRHS"> Old sports site</a><br/>
-		<a href="https://github.com/thorlancaster/thorlancaster.github.io/blob/master/BloonsTowerDefense.zip"> Bloons tower defense</a><br/>
-		<a href="/KTNS"> Feral cat pictures</a><br/>
+	<body bgcolor = "#000000" style="font-size: 3em;">
+		<img id="background" src="raspberry.jpg"></img>
+		<div style="background-color: #000000; position: fixed; text-align: center; width: 100%; box-shadow: 0vw 1vw 1vw #000000; top: 0vh">
+			<span style="color: #FF7800">Thor Lancaster's web site</span>
+		</div>
+		<div style="position: fixed; top: 20vh; text-align: center; width: 100vw">
+			<a href="/FMLRHS"> <img alt="School Sports 24/7" style="width: 18vw" src="schoolSports.png"></a>
+			<a href="/oldRHS"> <img alt="Old School Sports Site" style="width: 18vw" src="schoolSportsOld.png"></a>
+			<a href="https://github.com/thorlancaster/thorlancaster.github.io/blob/master/BloonsTowerDefense.zip"> <img alt="Bloons Tower defense"  style="width: 18vw" src="btd.png"></a>
+			<a href="/KTNS"> <img alt="Kitten"  style="width: 18vw" src="ktn.png"></a><br/>
+		</div>
 	</body>
 </html>
