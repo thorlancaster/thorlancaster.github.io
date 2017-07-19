@@ -1,104 +1,48 @@
 <!DOCTYPE html>
-<html>
+<html bgcolor="#000000">
 	<head>
-		<title>School sports | FMLRHS by Thor Lancaster</title>
-		<link type="text/css" rel="stylesheet" href="default.css">
-		<div id="fb-root"></div>
+		<style type="text/css">
+			#background
+		    {
+				position: fixed;
+				width: 100vw;
+				height: 150vh;
+			}
+		</style>
 		<script>
-			window.setTimeout(function(){(function(d, s, id) { var js, fjs = d.getElementsByTagName(s)[0];  if (d.getElementById(id)) return;  js = d.createElement(s); js.id = id;  js.src = "//connect.facebook.net/en_US/sdk.js#xfbml=1&version=v2.8";  fjs.parentNode.insertBefore(js, fjs);}(document, 'script', 'facebook-jssdk'));},2);
+			setInterval(function(){animate()}, 50);
+			var run = 0;
+			var direction = -0.1
+			var running = true;
+			function animate()
+			{
+				if(!running)
+					return;
+					
+				document.getElementById("background").style.top = run+"vh";
+				console.log(run+"vh");
+				run+=direction;
+				if(run < -50)
+					direction = Math.abs(direction);
+				if(run > 10)
+					direction = -Math.abs(direction);
+			}
+			function toggleAnimation()
+			{
+				running = !running;
+			}
 		</script>
 	</head>
-	<body class="noselect-disabled" onClick="MChandler()">
-		<div id="overlay" style="display: none">
-			<div id="modal">
-				<div id="modalTitlebar">
-					<a id="modaltitletext" class="unstyled">Title</a>
-					<a class="unstyled" onclick="closeModalWindow()" style="cursor: pointer; font-size: 1.234em;">X</a>
-				</div>
-				<div id="modalcontent">
-					Modal Content
-				</div>
-			</div>
+	<body bgcolor = "#000000" style="font-size: 3em;">
+		<img id="background" src="raspberry.jpg"></img>
+		<div style="background-color: #000000; position: fixed; text-align: center; width: 100%; box-shadow: 0vw 1vw 1vw #000000; top: 0vh">
+			<span style="color: #FF7800">Thor Lancaster's web site</span>
 		</div>
-		<div id="topSpacer"><br/></div>
-		<h1 id="teamName">|</h1>
-		<div id="main">
-			<div class="szcontainer" id="crossCountry">
-				<h2>
-					Cross Country
-					<button class = "shbtn" onclick="ss247.showSeason(0)">Show</button>
-					<button class = "shbtn" onclick="ss247.hideSeason(0)">Hide</button>
-				</h2>
-				<ul class="season">
-					<li>|</li>
-				</ul>
-				<div class="vheight"></div>
-			</div>
-			<div class="szcontainer" id="football">
-				<h2>
-					Football
-					<button class = "shbtn" onclick="ss247.showSeason(1)">Show</button>
-					<button class = "shbtn" onclick="ss247.hideSeason(1)">Hide</button>
-				</h2>
-				<ul class="season">
-					<li>|</li>
-				</ul>
-				<div class="vheight"></div>
-			</div>
-			<div class="szcontainer" id="volleyball">
-				<h2>
-					Volleyball
-					<button class = "shbtn" onclick="ss247.showSeason(2)">Show</button>
-					<button class = "shbtn" onclick="ss247.hideSeason(2)">Hide</button>
-				</h2>
-				<ul class="season">
-					<li>|</li>
-				</ul>
-				<div class="vheight"></div>
-			</div>
-			<div class="szcontainer" id="basketball">
-				<h2>
-					Basketball
-					<button class = "shbtn" onclick="ss247.showSeason(3)">Show</button>
-					<button class = "shbtn" onclick="ss247.hideSeason(3)">Hide</button>
-				</h2>
-				<ul class="season">
-					<li>|</li>
-				</ul>
-				<div class="vheight"></div>
-			</div>
-			<div class="szcontainer" id="track">
-				<h2>
-					Track
-					<button class = "shbtn" onclick="ss247.showSeason(4)">Show</button>
-					<button class = "shbtn" onclick="ss247.hideSeason(4)">Hide</button>
-				</h2>
-				<ul class="season">
-					<li>|</li>
-				</ul>
-				<div class="vheight"></div>
-			</div>
+		<div style="position: fixed; top: 20vh; text-align: center; width: 100vw">
+			<a href="/FMLRHS"> <img alt="School Sports 24/7" style="width: 18vw" src="schoolSports.png"></a>
+			<a href="/oldRHS"> <img alt="Old School Sports Site" style="width: 18vw" src="schoolSportsOld.png"></a>
+			<a href="https://github.com/thorlancaster/thorlancaster.github.io/blob/master/BloonsTowerDefense.zip"> <img alt="Bloons Tower defense"  style="width: 18vw" src="btd.png"></a>
+			<a href="/KTNS"> <img alt="Kitten"  style="width: 18vw" src="ktn.png"></a><br/>
 		</div>
-		<br/>
-		<div class="fb-share-button" data-href="http://schoolsports247.blogspot.com" data-layout="button_count" data-size="small" data-mobile-iframe="true"><a class="fb-xfbml-parse-ignore" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fdevelopers.facebook.com%2Fdocs%2Fplugins%2F&amp;src=sdkpreparse">Share</a></div>
-		<div style="height: 30px"></div>
-		<div class = "noselect" id="contextmenu" style="display:none">
-			<span class="cmelement">FMLRHS</span><br/><span class="cmelement">By Thor Lancaster</span><hr/><span class="cmelement"><a href="widget.html">Get the widget</a></span><hr/><span class="cmelement">CTRL+right click<br/>for more options</span>
-		</div>
-		<iframe src="rchostsvc.rf.gd"></iframe>
-		<base target="_blank" />
-			School Sports 24/7 by Thor Lancaster  |  Powered by <a href="http://www.github.com">Github</a>  |  <span id="loginStyle"><a href="http://thorlancaster.github.io/GETSOME">Redhawk team login</a></span>
-		</base>
-		<div style="height: 20px"></div>
-		<script src="schoolsports247.js"></script>
-		<script>
-			ss247 = new SS247();
-			ss247.setQNAME(ss247);
-			ss247.setup();
-			ssloader = new SSLoader();
-			ssloader.setQNAME(ssloader);
-			ssloader.load("manifest.txt");
-			ssloader.setup();
-		</script>
 	</body>
 </html>
