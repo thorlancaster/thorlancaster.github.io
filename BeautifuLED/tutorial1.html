@@ -1,0 +1,55 @@
+<html>
+	<head>
+		<title>BeauifuLED LED signs</title>
+		<link rel="stylesheet" type="text/css" href="default.css">
+	</head>
+	<body>
+		<img width="100%" id="banner" src="banner.png"></img>
+		<div id="content">
+			<a href="index.html">Back to home page</a>
+			<div id="intro">
+				This LED sign programming tutorial for BMM 1.0 will get your sign up and running in no time at all!
+			</div>
+			<h1>Step 1 - Open BeautifuLED Message Maker</h1>
+				<ul class="list">
+					<li><a href="BMM-1.0.0.zip"><strong>Download BMM 1.0 if you haven't already</strong></a></li>
+					<li>Unzip the folder to a easily accessible location, like your deskop</li>
+					<li>Open the folder and double-click on the BMM.jar file. A window should pop up.</li>
+				</ul>
+				<h1>Step 2 -  Create a frame</h1>
+				<ul class="list">
+					<li>Click on autosave.bfm in the message hierarchy. autosave.bfm is the file name.</li>
+					<li>In the right side of the window, you will see a button labeled <strong>Create empty frame</strong>. Click it to create an empty frame</li>
+					<li>You will notice that a folder has appeared below <em>autosave.bfm</em>, labeled <strong>Frame 0</strong>. Double click that folder to open frame 0</li>
+					<li>In the right side of the window, you will see a group of buttons. click <strong>add effect</strong> 3 times to add 3 effects.</li>
+				</ul>
+				<h1>Step 3 - Customize the effects</h1>
+				<ul class="list">
+					<li>Click on the effect labeled <strong>Effect 1: [BLANK]</strong> to select it</li>
+					<li>Using the drop-down menu in the top of the window, change the effect type from <strong>[BLANK]</strong> to <strong>color</strong></li>
+					<li>Click on the effect labeled <strong>Effect 2: [BLANK]</strong> to select it</li>
+					<li>Change the effect type from <strong>[BLANK]</strong> to <strong>text</strong> (using the drop down menu you used last time)</li>
+					<li>Click on the effect labeled <strong>Effect 2: [BLANK]</strong> to select it</li>
+				</ul>
+				<h1>Step 4 - Using the mixing snail</h1>
+				<ul class="list">
+					<li>Create a new frame by clicking on <strong>action</strong> in the top menu bar, and then clicking <strong>create empty frame</strong></li>
+					<li>Select the frame and add 3 new effects to it</li>
+					<li>Set the first effect as colored effects > color scroll, the second as text, and the third as colored effects > plasma. Change colors to your liking. Don't worry if it doesn't look right just yet.</li>
+					<li>Click on the frame you just created (on the left), and then click the <strong>Use Mixing Snail...</strong> button.</li>
+					<li>Set snail control #1 to: <strong>Source1:2  Source2:3  Destination:0</strong> with <strong>progressive</strong> as is type</li>
+					<li>Set snail control #0 to: <strong>Source1:0  Source2:1  Destination:0</strong> with <strong>left overlay[border]</strong> as is type</li>
+					<li>The text looks kind of faint. Go to the second effect (the text one) and change it's foreground color to white (using <strong>Set Foreground Color</strong>)</li>
+					<li>More contrast is needed. Drag the slider on snail control #0 until it looks good</li>
+					<li>The snail works by applying the snail controls from bottom to top (if they are enabled) sequentially.</li>
+					<li>To see more snail-powered mixing, open the <strong>example.bfm</strong> file by using <strong>File -> Open -> Browse to where you downloaded the program -> example.bfm</strong></li>
+				</ul>
+				<h1>Step 5 - Exporting</h1>
+				<ul class="list">
+					<li>Ensure the SD card is inserted in the adapter and plugged into the computer. The SD card should show up on the computer.</li>
+					<li>Select <strong>File -> Export to JNR</strong>. Under most cases, the program will automatically find the SD card and you can just press save. However, on some systems, you have to browse for the card. It will most likely have a display.jnr file already on it.</li>
+				</ul>
+			</div>
+		</div>
+	</body>
+</html>
