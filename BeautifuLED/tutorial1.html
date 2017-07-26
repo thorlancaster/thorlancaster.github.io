@@ -10,44 +10,63 @@
 			<div id="intro">
 				This LED sign programming tutorial for BMM 1.0 will get your sign up and running in no time at all!
 			</div>
+			<h1><a href="Youtube-placeholder" target="_blank">Open this video and follow along [should be up by 7/26]</a></h1>
+			<br/>
 			<h1>Step 1 - Open BeautifuLED Message Maker</h1>
 				<ul class="list">
-					<li><a href="BMM-1.0.0.zip"><strong>Download BMM 1.0 if you haven't already</strong></a></li>
-					<li>Unzip the folder to a easily accessible location, like your deskop</li>
+					<li><a href="BMM-1.0.0.zip"><strong>Download BMM 1.0 if you haven't already.</strong></a></li>
+					<li>Unzip the folder to a easily accessible location, like your deskop.</li>
 					<li>Open the folder and double-click on the BMM.jar file. A window should pop up.</li>
 				</ul>
 				<h1>Step 2 -  Create a frame</h1>
 				<ul class="list">
 					<li>Click on autosave.bfm in the message hierarchy. autosave.bfm is the file name.</li>
-					<li>In the right side of the window, you will see a button labeled <strong>Create empty frame</strong>. Click it to create an empty frame</li>
-					<li>You will notice that a folder has appeared below <em>autosave.bfm</em>, labeled <strong>Frame 0</strong>. Double click that folder to open frame 0</li>
+					<li>In the right side of the window, you will see a button labeled <strong>Create empty frame</strong>. Click it to create an empty frame.</li>
+					<li>You will notice that a folder has appeared below <em>autosave.bfm</em>, labeled <strong>Frame 0</strong>. Double click that folder to open frame 0.</li>
 					<li>In the right side of the window, you will see a group of buttons. click <strong>add effect</strong> 3 times to add 3 effects.</li>
 				</ul>
 				<h1>Step 3 - Customize the effects</h1>
 				<ul class="list">
-					<li>Click on the effect labeled <strong>Effect 1: [BLANK]</strong> to select it</li>
-					<li>Using the drop-down menu in the top of the window, change the effect type from <strong>[BLANK]</strong> to <strong>color</strong></li>
-					<li>Click on the effect labeled <strong>Effect 2: [BLANK]</strong> to select it</li>
-					<li>Change the effect type from <strong>[BLANK]</strong> to <strong>text</strong> (using the drop down menu you used last time)</li>
-					<li>Click on the effect labeled <strong>Effect 2: [BLANK]</strong> to select it</li>
+					<li>Click on the effect labeled <strong>Effect 0: [BLANK]</strong> to select it.</li>
+					<li>Using the drop-down menu in the top of the window, change the effect type from <strong>[BLANK]</strong> to <strong>color</strong>.</li>
+					<li>Click on the effect labeled <strong>Effect 1: [BLANK]</strong> to select it.</li>
+					<li>Change the effect type from <strong>[BLANK]</strong> to <strong>text</strong> (using the drop down menu you used last time).</li>
+					<li>Change the <strong>Foreground Color</strong> of the effect to white (Set the red, green, and blue sliders to their max values).</li>
+					<li>Type some text into the box. In the video, it is <em>BeautifuLED LED signs are cool!</em></li>
+					<li>Increase the text size until it looks good, enable the text outline and set scrolling to <strong>Right to Left</strong>. Add several (6-10) spaces after the text to ensure that it scrolls most of the way off the sign.</li>
+					<li>Check the <strong>Force Integer speed</strong> box. The text's speed will be slightly adjusted to sync with the sign's refresh rate. It will look a <em>lot</em> smoother on the LED sign that way. Use antialiasing if it looks better to you that way.</li>
+					<li>Change the position of the text on the sign with the slider labeled <strong>position</strong>.</li>
+					<li>The text is scrolling by too fast for people to read. Click on <strong>Frame 0</strong> on the left and increase the frame's time until the text is moving at a reasonable speed.</li>
+					<li>Click on the effect labeled <strong>Effect 2: [BLANK]</strong> to select it. Since it is not needed, click <strong>Delete this effect</strong> to remove it.</li>
 				</ul>
 				<h1>Step 4 - Using the mixing snail</h1>
 				<ul class="list">
-					<li>Create a new frame by clicking on <strong>action</strong> in the top menu bar, and then clicking <strong>create empty frame</strong></li>
-					<li>Select the frame and add 3 new effects to it</li>
+					<li>Create a new frame by clicking on <strong>action</strong> in the top menu bar, and then clicking <strong>Add empty frame</strong>.</li>
+					<li>Select the frame and add 3 new effects to it. Double click the frame to expand it.</li>
 					<li>Set the first effect as colored effects > color scroll, the second as text, and the third as colored effects > plasma. Change colors to your liking. Don't worry if it doesn't look right just yet.</li>
 					<li>Click on the frame you just created (on the left), and then click the <strong>Use Mixing Snail...</strong> button.</li>
-					<li>Set snail control #1 to: <strong>Source1:2  Source2:3  Destination:0</strong> with <strong>progressive</strong> as is type</li>
-					<li>Set snail control #0 to: <strong>Source1:0  Source2:1  Destination:0</strong> with <strong>left overlay[border]</strong> as is type</li>
-					<li>The text looks kind of faint. Go to the second effect (the text one) and change it's foreground color to white (using <strong>Set Foreground Color</strong>)</li>
-					<li>More contrast is needed. Drag the slider on snail control #0 until it looks good</li>
+					<li>Set snail control #1 to: <strong>Source1:2  Source2:3  Destination:0</strong> with <strong>Left intensity</strong> as is type.</li>
+					<li>Set snail control #0 to: <strong>Source1:0  Source2:1  Destination:0</strong> with <strong>left overlay[border]</strong> as is type.</li>
+					<li>The text looks kind of faint. Go to the second effect (the text one) and change it's foreground color to white (using <strong>Set Foreground Color</strong>). You can also change its size and position.</li>
+					<li>More contrast is needed. Select frame 1 and drag the slider on snail control #0 until it looks good.</li>
 					<li>The snail works by applying the snail controls from bottom to top (if they are enabled) sequentially.</li>
-					<li>To see more snail-powered mixing, open the <strong>example.bfm</strong> file by using <strong>File -> Open -> Browse to where you downloaded the program -> example.bfm</strong></li>
+					<li><strong>Don't forget to save using <em>File -> Save</em>!</strong></li>
+					<li>To see more snail-powered mixing, open the <strong>example.bfm</strong> file by using <strong>File -> Open -> Browse to where you downloaded the program -> example.bfm.</strong></li>
 				</ul>
 				<h1>Step 5 - Exporting</h1>
 				<ul class="list">
-					<li>Ensure the SD card is inserted in the adapter and plugged into the computer. The SD card should show up on the computer.</li>
+					<li>If your message is composed of mainly white backgrounds, that may overheat the sign if the sign is exposed to the sun. Non-white backgrounds are recommended.</li>
+					<li>Ensure the micro SD card is inserted in the adapter and plugged into the computer. The micro SD card should show up on the computer.</li>
 					<li>Select <strong>File -> Export to JNR</strong>. Under most cases, the program will automatically find the SD card and you can just press save. However, on some systems, you have to browse for the card. It will most likely have a display.jnr file already on it.</li>
+					<li>Once Message Maker starts responding again (not greyed out), you can remove the microSD card from the computer. You don't even <em>have</em> to safely remove, although the computer may complain if you don't.</li>
+					<li>Insert the micro SD card into the LED sign. It should start playing the content right away.</li>
+				</ul>
+				<h1>A note on saving</h1>
+				<ul class="list">
+					<li>When you open Mesage Maker, autosave.bfm will be loaded and you will start where you last left off.</li>
+					<li>To save to other places, use <strong>File -> Save</strong>.</li>
+					<li>When you close Message Maker, what you are working on will be saved to autosave.bfm.</li>
+					<li>If your computer crashes or suffers a power outage, autosave.bfm will not be saved. Incremental saving is coming in version 2.0.</li>
 				</ul>
 			</div>
 		</div>
