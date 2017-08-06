@@ -405,7 +405,9 @@ var whitelist = [
 "basketball",
 "track",
 "contextmenu",
-"loginStyle"];
+"loginStyle",
+"2k17-promo".
+"2k17-overlay"];
 var MWC_MWfound = false;
 function checkForMalware()
 {
