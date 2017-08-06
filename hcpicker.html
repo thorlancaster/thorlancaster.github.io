@@ -4,7 +4,7 @@
 		<script>
 			function redirect()
 			{
-				var target = window.atob(window.location.href.split("?url=")[1].replace("%3D","=");
+				var target = window.atob(window.location.href.split("?url=")[1].replace("%3D","="));
 				document.getElementById("main").href=target;
 				document.getElementById("main").innerHTML=target;
 				window.location.href = target;
