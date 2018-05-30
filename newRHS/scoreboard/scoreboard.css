@@ -1,0 +1,370 @@
+body{
+	text-align: center;
+	background-color: #000;
+	
+	-webkit-user-select: none;
+   -moz-user-select: none;
+   user-select: none;
+	
+	font-weight: bold;
+	font-family: sans-serif;
+	overflow: hidden;
+	margin: 0px;
+}
+.scoreboard{
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	top: 0%;
+	left: 0%;
+}
+/*Globals*/
+.fullscr{
+	position: fixed;
+	top: 0%;
+	left: 0%;
+	width: 100vw;
+	height: 100vh;
+	z-index: 99999999999;
+	background: #000;
+	transition: opacity 0.6s;
+}
+.topbar{
+	font-size: 200%;
+	position: fixed;
+	width: 100%;
+	background: linear-gradient(rgba(0,255,255,0.8),rgba(54,70,255,0.3));
+	z-index: 4;
+	transition: opacity 1s;
+	text-shadow: 0px 0px 1vw #FFF, 0px 0px 1vw #FFF, 0px 0px 3vw #F00;
+	-webkit-pointer-events: none;
+	pointer-events: none;
+}
+.scbranding{
+	background: linear-gradient(#F20,#000,#0B0,#000,#04F);
+	position: absolute;
+	width: 30%;
+	height: 3.7%;
+	left: 35.5%;
+	top: 15%;
+	font-size: 50%;
+}
+canvas{
+	width: 100%;
+	height: 100%;
+}
+.snailoader{
+	position: fixed;
+	width: 5em;
+	height: 5em;
+	top: calc(50% - 5em);
+	top: -webkit-calc(50% - 2.5em);
+	left: calc(50% - 5em);
+	left: -webkit-calc(50% - 2.5em);
+	color: #000;
+	z-index: 16;
+	font-size: 5em;
+	animation: spin 2s infinite linear;
+}
+@keyframes spin{
+	0%{transform: rotate(360deg);}
+	100%{transform: rotate(0deg);}
+}
+
+/*Main sections*/
+.homepfp{
+	background-color: #F00;
+	width: 20%;
+	margin-top: auto;
+	border-right: 1px solid black;
+}
+.scoremain{
+	width: 60%;
+	left: 20%;
+}
+.guestpfp{
+	background-color: #02F;
+	width: 20%;
+	left: 80%;
+	border-left: 1px solid black;
+}
+.mainscsect{
+	height: 100%;
+	position: absolute;
+	overflow: hidden;
+}
+/*The scoreboard itself*/
+.scorerow0{
+	height: 4%;
+	background: linear-gradient(90deg, #F04, #D5D, #40F);
+}
+.scorerow1{
+	height: 16%;
+}
+.scorerow2{
+	height: 20%;
+	background: linear-gradient(#000 85%, #00F 90%, #FFF 95%, #FF0 100%);
+}
+.scorerow3{
+	height: 45%;
+	background: linear-gradient(#975, #555, #579);
+}
+.scorerow4{
+	height: 15%;
+	font-size: 60%;
+}
+.scorerow{
+	width: 100%;
+}
+
+/*Row globals*/
+.screlement{
+	display: block;
+	width: 100%;
+	height: inherit;
+	position: absolute;
+	font-size: 83%;
+}
+/*The viewer counter*/
+.viewercount{
+	top: 0px;
+	margin: auto;
+	font-size: 50%;
+}
+/*The top row*/
+.teamname1{
+	width: 34%;
+	background: linear-gradient(#F04,#F50,#F90);
+}
+.gameclock{
+	background-color: #012;
+	width: 33%;
+	left: 34%;
+}
+.teamname2{
+	background: linear-gradient(#40F,#05F,#09F);
+	width: 33%;
+	left: 67%;
+}
+.btext{
+	position: absolute;
+	bottom: 0px;
+	width: 100%;
+	text-shadow: 0px 0px 0.7vmin #FFF;
+}
+/*The second row*/
+.homescore{
+	background-color: #000;
+	width: 25%;
+}
+.scoreperiod{
+	left: 35%;
+	width: 30%;
+	font-size: 60%;
+}
+.pdlabel{
+	height: 33%;
+	font-size: 150%;
+	text-shadow: 0px 0px 0.7vmin #FFF;
+}
+.scoreperiod canvas{
+	position: relative;
+	width: 25%;
+	height: 67%;
+}
+.guestscore{
+	background-color: #000;
+	width: 25%;
+	left: 75%;
+}
+/*The third row*/
+.scoregraph{
+	cursor: none;
+}
+.graphControls{
+	position: absolute;
+	width: 6%;
+	height: 6%;
+	background-color: rgba(127,204,255,0.5);
+	transition: width 1.5s, height 1.5s;
+	transition-timing-function: cubic-bezier(1,.01,.68,.97);
+	overflow: hidden;
+}
+.graphControls:hover,.graphControls:active{
+	width: 100%;
+	height: 7%;
+	transition-delay: 0s;
+	transition: width 0.3s, height 0.3s;
+}
+.graphbtn{
+	color: #FBA;
+	padding-left: 3%;
+	padding-right: 3%;
+	transition: color 0.2s, background-color 0.2s;
+	text-decoration: underline;
+	cursor: pointer;
+}
+.graphbtn:hover{
+	color: #0F0;
+	background-color: #FFF;
+}
+/*The SC overlay*/
+.SCoverlay{
+	font-size: 45%;
+	pointer-events: none;
+	z-index: 2;
+	display: none;
+	position: fixed;
+	width: 100px;
+	height: 100px;
+	background-color: rgba(255,255,255,0.3);
+	text-shadow: 0px 0px 0.7vmin #0F5, 0px 0px 0.7vmin #0F5;
+}
+
+
+/*The fourth row*/
+.homefouls{
+	background-color: rgba(0,0,0,0.9);
+	width: 8%;
+}
+.guestfouls{
+	background-color: rgba(0,0,0,0.9);
+	width: 8%;
+	left: 92%;
+}
+.homeFLabel, .guestFLabel{
+	position: absolute;
+	display: inline-block;
+	width: 30%;
+	left: 9%;
+	text-shadow: 0px 0px 0.3vmin #FFF, 0px 0px 0.6vmin #FFF, 0px 0px 0.9vmin #FFF;
+	text-align: left;
+}
+.guestFLabel{
+	left: 61%;
+	text-align: right;
+}
+.messageLabel{
+	position: absolute;
+	width: 100%;
+	text-align: center;
+	text-shadow: 0px 0px 0.3vmin #FFF, 0px 0px 0.6vmin #FFF, 0px 0px 0.9vmin #FFF;
+}
+.playerFouls{
+	display: inline;
+	width: 30%;
+	background-color: %F00;
+}
+.graphInfo{
+	display: none;
+	font-size: 150%;
+	background: linear-gradient(rgba(255,0,0,0.5),rgba(255,20,45,0.5));
+	border: 1px solid #04F;
+	padding: 1%;
+}
+/*The PFP columns*/
+.PFPheader{
+	height: 4%;
+	text-align: center;
+	font-size: 39%;
+	text-shadow: 0px 0px 0.2vmin #FFF, 0px 0px 0.2vmin #FFF, 0px 0px 0.2vmin #FFF;
+	margin-left: 3%;
+	margin-right: 3%;
+}
+.PFPheader div{
+	display: inline-block;
+}
+.PFPh1{
+	height: 100%;
+	width: 34%;
+	text-align: left;
+}
+.PFPh2{
+	height: 100%;
+	width: 33%;
+	left: 34%;
+	text-align: center;
+}
+.PFPh3{
+	height: 100%;
+	width: 33%;
+	left: 67%;
+	text-align: right;
+}
+
+/*The bottom score-drawer*/
+.scoredrawer{
+	-webkit-pointer-events: none;
+	pointer-events: none;
+	position: absolute;
+	height: 4vmin;
+	width: 50%;
+	bottom: 0px;
+	left: 25%;
+	background: linear-gradient(rgba(255,0,0,0.5), rgba(204,204,192,0.5), rgba(0,0,255,0.5));
+	-webkit-pointer-events: none;
+	font-size: 50%;
+	border: 1px solid black;
+	text-shadow: 0px 0px 0.5vmin #FD0, 0px 0px 0.5vmin #FD0;
+	transition: height 0.5s, width 0.7s;
+}
+.scdheader{
+	-webkit-pointer-events: auto;
+	pointer-events: auto;
+	cursor: pointer;
+	text-shadow: none;
+	height: 4vmin;
+	width: 100%;
+	font-size: 125%;
+	background-color: rgba(255,255,255,0.7);
+	text-align: center;
+}
+
+/*Score Camera notification*/
+#PCASnot{
+	visibility: hidden;
+	position: absolute;
+	width: 80%;
+	top: 0px;
+	left: 10%;
+	background: linear-gradient(#F90, #FF0);
+	font-size: 90%;
+	border: 1px solid black;
+	transition: opacity 0.5s;
+	cursor: pointer;
+}
+.TNclose{
+	font-size: 70%;
+	text-decoration: underline;
+	background: linear-gradient(90deg, #F00, #7A3, #07F);
+	border: 2px solid black;
+	transition: color 0.3s;
+}
+.TNclose:hover{
+	color: #FFF;
+}
+
+/*Script-generated elements*/
+.PFPblock{
+	width: 96%;
+	height: calc(20% - 0.4%);
+	background-color: #000;
+	margin-left: 2%;
+	margin-right: 2%;
+}
+.PFPdigit{
+	display: inline-block;
+	width: 30%;
+	margin-right: 3.3333%;
+	background-color:rgba(0,0,0,0.2);
+	height: 60%;
+}
+.pfpspacerh{
+	height: 100%;
+	background-color: rgba(0,0,0,0.4);
+}
+.pfpspacerg{
+	height: 100%;
+	background-color: rgba(0,0,0,0.66);
+}
+

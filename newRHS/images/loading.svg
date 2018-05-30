@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 580 198" xmlns="http://www.w3.org/2000/svg">
+<g>
+<rect x="-1" y="-1" width="582" height="200" fill="#fff"/>
+<g x="0" y="0" display="none" overflow="visible">
+<rect width="100%" height="100%" fill="url(#gridpattern)" stroke-width="0"/>
+</g>
+</g>
+<g>
+<text transform="matrix(5.1049 0 0 5.4863 -2548.1 -701.22)" x="503.7714" y="154.054" fill="#000" font-family="Helvetica, Arial, sans-serif" font-size="24" stroke="#000" stroke-width="0" xml:space="preserve">Loading...</text>
+</g>
+</svg>

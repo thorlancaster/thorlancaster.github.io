@@ -1,0 +1,8 @@
+./admin.css
+./admin.html
+./admin.js
+./scoreboard.css
+/scripts/SHA256.js
+/scripts/ui.js
+/styles/ui.css
+/images/image.php?url=icons/traffic.jpg
