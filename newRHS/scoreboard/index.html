@@ -1,0 +1,1970 @@
+
+
+<!DOCTYPE html>
+<html>
+<!-- live scoreboard -->
+	<head>
+		<META HTTP-EQUIV="Pragma" CONTENT="no-cache">
+		<META HTTP-EQUIV="Expires" CONTENT="-1">
+		<title id="title">Live scores</title>
+		<link href="/favicon.ico" rel="icon" type="image/x-icon">
+		<script>/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
+/* SHA-256 (FIPS 180-4) implementation in JavaScript                  (c) Chris Veness 2002-2017  */
+/*                                                                                   MIT Licence  */
+/* www.movable-type.co.uk/scripts/sha256.html                                                     */
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
+
+'use strict';
+
+
+/**
+ * SHA-256 hash function reference implementation.
+ *
+ * This is an annotated direct implementation of FIPS 180-4, without any optimisations. It is
+ * intended to aid understanding of the algorithm rather than for production use.
+ *
+ * While it could be used where performance is not critical, I would recommend using the ‘Web
+ * Cryptography API’ (developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/digest) for the browser,
+ * or the ‘crypto’ library (nodejs.org/api/crypto.html#crypto_class_hash) in Node.js.
+ *
+ * See csrc.nist.gov/groups/ST/toolkit/secure_hashing.html
+ *     csrc.nist.gov/groups/ST/toolkit/examples.html
+ */
+class Sha256 {
+
+	/**
+	 * Generates SHA-256 hash of string.
+	 *
+	 * @param   {string} msg - (Unicode) string to be hashed.
+	 * @param   {Object} [options]
+	 * @param   {string} [options.msgFormat=string] - Message format: 'string' for JavaScript string
+	 *   (gets converted to UTF-8 for hashing); 'hex-bytes' for string of hex bytes ('616263' ≡ 'abc') .
+	 * @param   {string} [options.outFormat=hex] - Output format: 'hex' for string of contiguous
+	 *   hex bytes; 'hex-w' for grouping hex bytes into groups of (4 byte / 8 character) words.
+	 * @returns {string} Hash of msg as hex character string.
+	 */
+	static hash(msg, options) {
+		const defaults = { msgFormat: 'string', outFormat: 'hex' };
+		const opt = Object.assign(defaults, options);
+
+		// note use throughout this routine of 'n >>> 0' to coerce Number 'n' to unsigned 32-bit integer
+
+		switch (opt.msgFormat) {
+			default: // default is to convert string to UTF-8, as SHA only deals with byte-streams
+			case 'string':   msg = utf8Encode(msg);       break;
+			case 'hex-bytes':msg = hexBytesToString(msg); break; // mostly for running tests
+		}
+
+		// constants [§4.2.2]
+		const K = [
+			0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
+			0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
+			0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
+			0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
+			0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
+			0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
+			0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
+			0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2 ];
+
+		// initial hash value [§5.3.3]
+		const H = [
+			0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19 ];
+
+		// PREPROCESSING [§6.2.1]
+
+		msg += String.fromCharCode(0x80);  // add trailing '1' bit (+ 0's padding) to string [§5.1.1]
+
+		// convert string msg into 512-bit blocks (array of 16 32-bit integers) [§5.2.1]
+		const l = msg.length/4 + 2; // length (in 32-bit integers) of msg + ‘1’ + appended length
+		const N = Math.ceil(l/16);  // number of 16-integer (512-bit) blocks required to hold 'l' ints
+		const M = new Array(N);     // message M is N×16 array of 32-bit integers
+
+		for (let i=0; i<N; i++) {
+			M[i] = new Array(16);
+			for (let j=0; j<16; j++) { // encode 4 chars per integer (64 per block), big-endian encoding
+				M[i][j] = (msg.charCodeAt(i*64+j*4+0)<<24) | (msg.charCodeAt(i*64+j*4+1)<<16)
+						| (msg.charCodeAt(i*64+j*4+2)<< 8) | (msg.charCodeAt(i*64+j*4+3)<< 0);
+			} // note running off the end of msg is ok 'cos bitwise ops on NaN return 0
+		}
+		// add length (in bits) into final pair of 32-bit integers (big-endian) [§5.1.1]
+		// note: most significant word would be (len-1)*8 >>> 32, but since JS converts
+		// bitwise-op args to 32 bits, we need to simulate this by arithmetic operators
+		const lenHi = ((msg.length-1)*8) / Math.pow(2, 32);
+		const lenLo = ((msg.length-1)*8) >>> 0;
+		M[N-1][14] = Math.floor(lenHi);
+		M[N-1][15] = lenLo;
+
+
+		// HASH COMPUTATION [§6.2.2]
+
+		for (let i=0; i<N; i++) {
+			const W = new Array(64);
+
+			// 1 - prepare message schedule 'W'
+			for (let t=0;  t<16; t++) W[t] = M[i][t];
+			for (let t=16; t<64; t++) {
+				W[t] = (Sha256.SumL1(W[t-2]) + W[t-7] + Sha256.SumL0(W[t-15]) + W[t-16]) >>> 0;
+			}
+
+			// 2 - initialise working variables a, b, c, d, e, f, g, h with previous hash value
+			let a = H[0], b = H[1], c = H[2], d = H[3], e = H[4], f = H[5], g = H[6], h = H[7];
+
+			// 3 - main loop (note '>>> 0' for 'addition modulo 2^32')
+			for (let t=0; t<64; t++) {
+				const T1 = h + Sha256.SumU1(e) + Sha256.Ch(e, f, g) + K[t] + W[t];
+				const T2 =     Sha256.SumU0(a) + Sha256.Maj(a, b, c);
+				h = g;
+				g = f;
+				f = e;
+				e = (d + T1) >>> 0;
+				d = c;
+				c = b;
+				b = a;
+				a = (T1 + T2) >>> 0;
+			}
+
+			// 4 - compute the new intermediate hash value (note '>>> 0' for 'addition modulo 2^32')
+			H[0] = (H[0]+a) >>> 0;
+			H[1] = (H[1]+b) >>> 0;
+			H[2] = (H[2]+c) >>> 0;
+			H[3] = (H[3]+d) >>> 0;
+			H[4] = (H[4]+e) >>> 0;
+			H[5] = (H[5]+f) >>> 0;
+			H[6] = (H[6]+g) >>> 0;
+			H[7] = (H[7]+h) >>> 0;
+		}
+
+		// convert H0..H7 to hex strings (with leading zeros)
+		for (let h=0; h<H.length; h++) H[h] = ('00000000'+H[h].toString(16)).slice(-8);
+
+		// concatenate H0..H7, with separator if required
+		const separator = opt.outFormat=='hex-w' ? ' ' : '';
+
+		return H.join(separator);
+
+		/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
+
+		function utf8Encode(str) {
+			try {
+				return new TextEncoder().encode(str, 'utf-8').reduce((prev, curr) => prev + String.fromCharCode(curr), '');
+			} catch (e) { // no TextEncoder available?
+				return unescape(encodeURIComponent(str)); // monsur.hossa.in/2012/07/20/utf-8-in-javascript.html
+			}
+		}
+
+		function hexBytesToString(hexStr) { // convert string of hex numbers to a string of chars (eg '616263' -> 'abc').
+			const str = hexStr.replace(' ', ''); // allow space-separated groups
+			return str=='' ? '' : str.match(/.{2}/g).map(byte => String.fromCharCode(parseInt(byte, 16))).join('');
+		}
+	}
+
+
+
+	/**
+	 * Rotates right (circular right shift) value x by n positions [§3.2.4].
+	 * @private
+	 */
+	static ROTR(n, x) {
+		return (x >>> n) | (x << (32-n));
+	}
+
+
+	/**
+	 * Logical functions [§4.1.2].
+	 * @private
+	 */
+	static SumU0(x) { return Sha256.ROTR(2,  x) ^ Sha256.ROTR(13, x) ^ Sha256.ROTR(22, x); }
+	static SumU1(x) { return Sha256.ROTR(6,  x) ^ Sha256.ROTR(11, x) ^ Sha256.ROTR(25, x); }
+	static SumL0(x) { return Sha256.ROTR(7,  x) ^ Sha256.ROTR(18, x) ^ (x>>>3);  }
+	static SumL1(x) { return Sha256.ROTR(17, x) ^ Sha256.ROTR(19, x) ^ (x>>>10); }
+	static Ch(x, y, z)  { return (x & y) ^ (~x & z); }          // 'choice'
+	static Maj(x, y, z) { return (x & y) ^ (x & z) ^ (y & z); } // 'majority'
+
+}
+
+
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
+
+if (typeof module != 'undefined' && module.exports) module.exports = Sha256; // ≡ export default Sha256</script>
+		<script>// Global config settings
+var USING_SAVED = false;
+var SAVE_PATH = "";
+var NUM_WIDTH = 100;
+var NUM_HEIGHT = 160;
+var DIGIT_SPACING = 1.1;
+var scoreText;
+var FADE = 3;
+var BLOW = 1.1;
+
+var minAspect = 1.5;
+var maxAspect = 2.3;
+
+var FOOTBALL = 0;
+var VOLLEYBALL = 1;
+var BASKETBALL = 2;
+// global 
+var uniqueID = "";
+var totalViewers = "";
+
+var senditRedirectDialogShown = false;
+var lastScoreTXT = "";
+var lastScoreRCR = "";
+var lastScoreHASH = "";
+var runningErrors = 0;
+var manager;
+var pingEvent;
+var TICKING = false;
+var ticks = 0;
+var ticksSinceUpdate = 0;
+var lastClock = 0;
+var DRAWER_EL;
+var boardWidth = 0;
+var boardHeight = 0;
+// global pre-configuration
+
+// classes
+function NumManager()
+{
+	// current, past, element, gradient
+	this.sport = 1; // default is volleyball (least complex)
+	this.message = "";
+	this.messageHTML = "";
+	this.messageElement = null;
+	this.ELEMENT = 2;
+	this.GRADIENT = 3;
+	this.clock = new Array(4);
+	this.home = new Array(4);
+	this.guest = new Array(4);
+	this.homef = new Array(4);
+	this.guestf = new Array(4);
+	this.period = new Array(4);
+	this.setClock = function(a){this.clock[0] = a;};
+	this.setHome = function(a){this.home[0] = a;};
+	this.setGuest = function(a){this.guest[0] = a;};
+	this.setHomef = function(a){this.homef[0] = a;};
+	this.setGuestf = function(a){this.guestf[0] = a;};
+	this.setPeriod = function(a){this.period[0] = a;};
+	
+	//[row #][player,fouls,points][current,past,element,gradient];
+	this.homePFP = new Array(20);
+	this.guestPFP = new Array(20);
+	for(var x = 0; x < this.homePFP.length; x++)
+	{
+		this.homePFP[x] = new Array(3);
+		for(var y = 0; y < this.homePFP[x].length; y++)
+		{
+			this.homePFP[x][y] = new Array(4);
+			this.homePFP[x][y][0] = 0;
+			this.homePFP[x][y][3] = 4;
+		}
+	}
+	for(var x = 0; x < this.guestPFP.length; x++)
+	{
+		this.guestPFP[x] = new Array(3);
+		for(var y = 0; y < this.guestPFP[x].length; y++)
+		{
+			this.guestPFP[x][y] = new Array(4);
+			this.guestPFP[x][y][0] = 0;
+			this.guestPFP[x][y][3] = 5;
+		}
+	}
+	
+	this.update = function(){
+		if(this.clock[0] != this.clock[1]){
+			refreshDisplay(this.clock[2],this.format(this.clock[0],this.clock[2].dataset.numType),this.clock[3]);
+			this.clock[1] = this.clock[0];
+		}
+		if(this.home[0] != this.home[1]){
+			refreshDisplay(this.home[2],this.format(this.home[0],this.home[2].dataset.numType),this.home[3]);
+			this.home[1] = this.home[0];
+		}
+		if(this.guest[0] != this.guest[1]){
+			refreshDisplay(this.guest[2],this.format(this.guest[0],this.guest[2].dataset.numType),this.guest[3]);
+			this.guest[1] = this.guest[0];
+		}
+		if(this.homef[0] != this.homef[1]){
+			refreshDisplay(this.homef[2],this.format(this.homef[0],this.homef[2].dataset.numType),this.homef[3]);
+			this.homef[1] = this.homef[0];
+		}
+		if(this.guestf[0] != this.guestf[1]){
+			refreshDisplay(this.guestf[2],this.format(this.guestf[0],this.guestf[2].dataset.numType),this.guestf[3]);
+			this.guestf[1] = this.guestf[0];
+		}
+		if(this.period[0] != this.period[1]){
+			refreshDisplay(this.period[2],this.format(this.period[0],this.period[2].dataset.numType),this.period[3]);
+			this.period[1] = this.period[0];
+		}
+		
+		for(var x = 0; x < this.homePFP.length; x++)
+		{
+			for(var y = 0; y < this.homePFP[x].length; y++)
+			{
+				var arr = this.homePFP[x][y];
+				if(arr[0] != arr[1])
+				{
+					refreshDisplay(arr[2], this.format(arr[0],arr[2].dataset.numType),arr[3]);
+					arr[1] = arr[0];
+				}
+			}
+		}
+		
+		for(var x = 0; x < this.guestPFP.length; x++)
+		{
+			for(var y = 0; y < this.guestPFP[x].length; y++)
+			{
+				var arr = this.guestPFP[x][y];
+				if(arr[0] != arr[1])
+				{
+					refreshDisplay(arr[2], this.format(arr[0],arr[2].dataset.numType),arr[3]);
+					arr[1] = arr[0];
+				}
+			}
+		}
+		if(this.messageElement != null && this.message != null && this.message != undefined){
+			if(this.messageHTML !== this.message)
+				this.messageElement.innerHTML = this.message;
+			this.messageHTML = this.message;
+		}
+	};
+	this.format = function(num, fm){
+		num = num.toString();
+		var nptr = num.length - 1;
+		var rtn = "";
+		for(var x = fm.length-1; x >= 0; x--)
+		{
+			var chr = fm.charAt(x);
+			if(chr == "N")
+			{
+				if(nptr >= 0)
+				rtn = num.charAt(nptr--)+rtn;
+			}
+			else if(chr == "M")
+			{
+				if(nptr >= 0)
+					rtn = num.charAt(nptr--)+rtn;
+				else
+					rtn = "0" + rtn;
+			}
+			else if(chr == "S")
+			{
+				if(nptr >= 0)
+					rtn = num.charAt(nptr--)+rtn;
+				else
+					rtn = " " + rtn;
+			}
+			else
+				rtn = chr + rtn;
+		}
+		return rtn;
+	}
+}
+
+function RCManager(out){
+	//0 is rainbow, 1 is home, 2 is visitor
+	this.gradients = new Array(3);
+
+	this.homeName = "Home";
+	this.guestName = "Guest";
+	this.liveTime = 0; // internet time from live feed
+	this.bufTime = Array(5); // buffer of liveTime WRT real seconds
+	this.realTime = 0; // time to display on the scoreboard
+	this.ticking = false; // is the liveTime ticking?
+	this.output = out;
+	
+	this.needsRecalc = true;
+	this.periodFilter = -1;
+	this.controlStr = "";
+	this.element = null;
+	this.overlayElement = null;
+	this.controls = null;
+	this.scores = new Array(0); // home guest minutes seconds homefouls guestfouls period
+	
+	this.setOutput = function(out){
+		this.output = out;
+	}
+	this.setPeriodFilter = function(pf){
+		this.periodFilter = pf;
+		if(pf == -1)
+			style = "none";
+		else{
+			style = "inline";
+			DGE("graphInfo").innerHTML = "Period "+pf;
+		}
+		DGE("graphInfo").style.display = style;
+		this.recalculate();
+		this.redraw();
+	}
+	
+	this.load = function(dat){
+		this.scores = new Array(0);
+
+		if(dat.indexOf("<FileDivider>") > -1){
+			dat = dat.split("<FileDivider>");
+			updateScoreboard(dat[1]);
+			dat = dat[0];
+		}
+		var lines = (dat.split("*"));
+		for(var x = 0; x < lines.length; x++){
+			if(lines[x].length == 0) continue;
+			var line = lines[x].split(",");
+			var arr = new Array(7);
+			for(var y = 0; y < arr.length; y++)
+				arr[y] = parseInt(line[y]);
+			this.scores.push(arr);
+		}
+		this.recalculate();
+		this.redraw();
+		if(this.overlayElement) this.updateLiveOverlay(this.overlayElement);
+	}
+	this.print = function(){
+		for(var x = 0; x < this.scores.length; x++)
+			console.log("home: "+this.scores[x][0]+"  Guest: "+this.scores[x][1]);
+	}
+	this.newScore = function(data){
+		this.needsRecalc = true;
+		//console.log(data);
+		var dat = JSON.parse(data);
+		var Nscores = this.scores.length;
+		if(this.scores.length < 1 || this.scores[Nscores-1][0] != dat.home || 
+		this.scores[Nscores-1][1] != dat.guest || this.scores[Nscores-1][2] != dat.period){
+
+			if(this.scores.length > 0 && (this.scores[Nscores-1][0] > dat.home || 
+			this.scores[Nscores-1][1] > dat.guest || this.scores[Nscores-1][2] > dat.period && !USING_SAVED)){
+				RCinit();
+			}
+			else{
+				var arr = new Array(7);
+				arr[0] = dat.home; arr[1] = dat.guest; arr[2] = dat.period; 
+				this.scores.push(arr);
+				this.redraw();
+			}
+		}
+	}
+	// calculated vars
+	this.numScores = 0;
+	this.timeEnabled = false;
+	this.maxScore = 0;
+	this.Pstart = 0; this.Pstop = 0;
+	this.periods = new Array(10); // TODO more periods?
+	this.graphData = new Array(0); // pct[0,1)		homeScore		guestScore
+	this.maxPeriod = 0;
+	
+	this.recalculate = function(){
+		this.needsRecalc = false;
+		this.numScores = this.scores.length;
+		this.periods = new Array(10);
+		if(this.numScores > 0){
+			this.timeEnabled = 0;
+			this.maxScore = 0;
+			for(var x = 0; x < this.periods.length; x++){this.periods[x] = 0;}
+// calculate numScores and timeEnabled (by majority vote)
+			for(var x = 0; x < this.numScores; x++){
+				this.maxScore = Math.max(this.maxScore, this.scores[x][0],this.scores[x][1])
+				this.periods[this.scores[x][6]]++;
+
+				if(x < this.numScores-1){
+					if(this.scores[x][2]*60+this.scores[x][3] < this.scores[x+1][2]*60+this.scores[x+1][3])
+						this.timeEnabled++;
+					else
+						this.timeEnabled--;
+				}
+			}
+			this.timeEnabled = (this.timeEnabled > 0);
+// calculate period filter
+			this.Pstart = 0; this.Pstop = this.numScores;
+			if(this.periodFilter > -1)
+			{
+				var ptx = 0;
+				for(ptx = 0; ptx < this.numScores; ptx++){
+					if(this.scores[ptx][6] == this.periodFilter){
+						this.Pstart = ptx;
+						break;
+					}
+				}
+				for(;ptx < this.numScores; ptx++){
+					if(this.scores[ptx][6] != this.periodFilter){
+						this.Pstop = ptx;
+						break;
+					}
+				}
+			}
+			// start with duration = 0, time = 0
+			// for all scores:
+				// set time to abs(thisTime-lastTime)
+				// increment duration by time
+			this.graphData = new Array(0); // list of[xpct][home][guest][period]
+			
+			var duration = 0; // total time (SUM)
+			var time = 0; // this time (NUM);
+			for(var x = this.Pstart; x < this.Pstop; x++){
+				if(x > 0 && this.scores[x][6] == this.scores[x-1][6])
+					time = Math.abs((this.scores[x][2]*60+this.scores[x][3]) - (this.scores[x-1][2]*60+this.scores[x-1][3]));
+				else
+					time = 0;
+				//console.log(x+", "+this.scores[x][2] +", "+ this.scores[x][3] +", "+ time);
+				duration+=time;
+				var arr = new Array(4);
+				arr[0] = duration;
+				arr[1] = this.scores[x][0];
+				arr[2] = this.scores[x][1];
+				arr[3] = this.scores[x][6];
+				this.graphData.push(arr);
+			}
+
+			var tpos = 0;
+			for(var x = 0; x < this.graphData.length; x++){
+				var arr = this.graphData[x];
+				tpos = arr[0]/duration;
+				arr[0] = tpos;
+			}
+		}
+// defaults if no scores are available
+		else{
+			this.Pstart = 0; this.Pstop = 0;
+			this.maxScore = 25;
+			this.timeEnabled = false;
+			this.graphData = new Array(0);
+		}
+		this.refreshControls();
+	}
+	this.printScores = function(){
+		for(var x = 0; x < this.scores.length; x++){
+			var a = this.scores[x];
+			console.log("Home "+a[0]+",Guest "+a[1]+",Period "+a[6]+",Time "+(a[2]*60+a[3]));
+		}
+	}
+	this.redraw = function(){
+		if(this.needsRecalc)
+			this.recalculate();
+		var el = this.element;
+		el.width = Math.max(el.offsetWidth,500); el.height = Math.max(el.offsetHeight,200);
+		cw = el.width; ch = el.height;
+		var ctx = el.getContext("2d");
+		this.calculateGradients(ctx); // TODO resize or load only
+		ctx.font = ch/10+"px arial";
+		ctx.lineWidth = ch/500;
+
+		ctx.clearRect(0,0,cw,ch);
+		ctx.lineWidth = ch/45;
+		ctx.fillStyle = "#FFF";
+		var xpos,ypos;
+		for(var i = 0; i < 4; i++)
+		{
+			ctx.lineWidth = (ch/300)*(4-i);
+			// guest graph
+			if(i == 0) ctx.strokeStyle = "#0FF";
+			if(i == 1) ctx.strokeStyle = "#0AF";
+			if(i == 2) ctx.strokeStyle = "#04F";
+			if(i == 3) ctx.strokeStyle = "#00F";
+			ctx.beginPath();
+			ctx.moveTo(0,el.height);
+			var GDL = this.graphData.length;
+			for(var x = 0; x < GDL; x++){
+				xpos = this.graphData[x][0]*el.width;
+				ypos = el.height-(this.graphData[x][2]/this.maxScore)*el.height;
+				if(x == 0 || this.graphData[x][3] == this.graphData[x-1][3])
+					ctx.lineTo(xpos,ypos);
+				else{
+					ctx.moveTo(xpos,ypos);
+				}
+			}
+			ctx.stroke();
+			
+			// home graph
+			if(i == 0) ctx.strokeStyle = "#770";
+			if(i == 1) ctx.strokeStyle = "#F70";
+			if(i == 2) ctx.strokeStyle = "#F40";
+			if(i == 3) ctx.strokeStyle = "#F03";
+			ctx.beginPath();
+			ctx.moveTo(0,el.height);
+			for(var x = 0; x < GDL; x++){
+				xpos = this.graphData[x][0]*el.width;
+				ypos = el.height-(this.graphData[x][1]/this.maxScore)*el.height;
+				if(x == 0 || this.graphData[x][3] == this.graphData[x-1][3])
+					ctx.lineTo(xpos,ypos);
+				else
+					ctx.moveTo(xpos,ypos);
+			}
+			ctx.stroke();
+		}
+		
+		ctx.strokeStyle = this.gradients[0];
+		this.drawScale(ctx,cw*0.01,ch*0.97,cw*0.01,ch*0.1,0,this.maxScore);
+		try{document.getElementById("SCDC0").innerHTML = getRealClearSummary(RCmanager);}
+		catch(e){document.getElementById("SCDC0").innerHTML = "Not Available"; console.error(e);};
+	}
+	this.drawScale = function(ctx,x1,y1,x2,y2,min,max)
+	{
+		var scale = (max-min);
+		var maxGrads = (Math.sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2))) / parseInt(ctx.font);
+		while(scale > maxGrads)(scale = scale / 2);
+		ctx.save();
+		ctx.lineWidth = parseInt(ctx.font)/20;
+		ctx.textAlign = "left";
+		var inv = false;
+		if(max < min){
+			var v2 = min;
+			min = max;
+			max = v2;
+			inv = true;
+		}
+		for(var x = 0; x <= scale; x++)
+		{
+			var xp = x1 + (x2-x1)*(x/scale);
+			var yp = y1 + (y2-y1)*(x/scale);
+			var val = Math.floor(min+(max-min)*(x/scale)+0.5);
+			ctx.fillText(val,xp,yp);
+			ctx.strokeText(val,xp,yp);
+		}
+		ctx.restore();
+	}
+	this.calculateGradients = function(ctx){ // rainbow, home, guest
+		for(var x = 0; x < this.gradients.length; x++)this.gradients[x]=ctx.createLinearGradient(0,0,cw,ch);
+		for(var x = 0; x < 20; x++) this.gradients[0].addColorStop(""+(x/20),C2S(HSV2RGB(x/5,1,1)));
+		for(var x = 0; x < 5; x++) this.gradients[1].addColorStop(""+(x/5),C2S(HSV2RGB(x/70,1,1)));
+		for(var x = 0; x < 5; x++) this.gradients[2].addColorStop(""+(x/5),C2S(HSV2RGB(x/30+0.5,1,1)));
+	}
+	this.refreshControls = function(){
+		this.controlStr = "Period: <span onclick='filterPeriod(-1)' class='graphbtn'> ALL </span>";
+		for(var x = 0; x < this.periods.length; x++){
+			if(this.periods[x] > 2){
+				this.controlStr+="<span onclick='filterPeriod("+x+")' class='graphbtn'>"+x+"</span>";
+				this.maxPeriod = x;
+			}
+		}
+		this.controls.innerHTML = ">> "+this.controlStr;
+	}
+	this.getSummaryAt = function(x,y){
+		if(this.graphData.length > 1){
+		var index = this.getIndexAt(x/this.element.offsetWidth);
+		try{
+			return   this.homeName +": "+this.graphData[index][1]+"<br/>"
+				+this.guestName+": "+this.graphData[index][2]+"<br/>\u254B<br/>"
+				+"Period: "+		 this.graphData[index][3];
+			}
+			catch(e){return "None here";}
+		}
+		else return ("No data available yet");
+	}
+	this.getIndexAt = function(pct){
+		var minIndex = 0;
+		var maxIndex = this.graphData.length - 1;
+		var currentIndex;
+		var currentElement;
+		while (minIndex <= maxIndex) {
+			currentIndex = (minIndex + maxIndex) / 2 | 0;
+			currentElement = this.graphData[currentIndex][0];
+			if (currentElement < pct) {
+				minIndex = currentIndex + 1;	
+			}
+			else if (currentElement > pct) {
+				maxIndex = currentIndex - 1;
+			}
+			else return currentIndex;
+		}
+		try{
+		currentElement = this.graphData[minIndex][0];
+		var maxElement = this.graphData[maxIndex][0];
+		if(Math.abs(currentElement-pct) > Math.abs(maxElement-pct))
+			return maxIndex;
+		}
+		catch(e){}
+		return minIndex;
+	}
+	this.updateLiveOverlay = function(el){
+		var elPos = this.element.getBoundingClientRect();
+		var pos = el.getBoundingClientRect();
+		var elX = pos.x+pos.width/2;
+		var elY = pos.y+pos.height/2;
+		el.innerHTML = this.getSummaryAt(elX-elPos.left, elY-elPos.top);
+	}
+	this.setLiveClock = function(tmr, tck){
+		//console.log(tmr);
+		this.liveTime = tmr;
+		this.ticking = tck;
+	}
+	this.tick = function(output){
+		
+		// when clock starts, flush out undefined values
+		var bufLen = this.bufTime.length;
+		if(this.bufTime[0] == undefined && this.bufTime[bufLen-1] > 0){
+			if(this.ticking) // preload decreasing values if ticking
+				for(var x = 0; x < bufLen-1; x++)
+					this.bufTime[x] = this.bufTime[bufLen-1] + (bufLen+1-x);
+			else
+				for(var x = 0; x < this.bufTime.length-1; x++)
+					this.bufTime[x] = this.bufTime[bufLen-1];
+		}
+		
+		// tick liveTime if the clock is ticking
+		if(this.ticking && this.liveTime > 0)
+			this.liveTime--;
+		// shift values one down
+		for(var x = 0; x < bufLen-1; x++)
+			this.bufTime[x] = this.bufTime[x+1];
+		// validate bufTime
+		for(var i = 0; i < (bufLen+1)/2; i++)
+			for(var x = 0; x < bufLen-1; x++)
+				if(this.bufTime[x] < this.bufTime[x+1])
+					this.bufTime[x] = this.bufTime[x+1];
+			
+		this.bufTime[this.bufTime.length-1] = this.liveTime;
+		
+		this.output.setClock(Math.floor(this.bufTime[0]/60)*100+this.bufTime[0]%60);
+		this.output.update();
+	}
+}
+
+
+// UI for RCmanager
+var TT_size = 0;
+function graphEnter(e){
+	TT_size = RCmanager.element.clientWidth/4;
+	var el = DGE("SCoverlay");
+	el.style.display = "block";
+	el.style.width = TT_size+"px";
+	el.style.height = TT_size/2+"px";
+}
+function graphLeave(e){
+	DGE("SCoverlay").style.display = "none";
+}
+function graphMove(e){
+	var mouseX = e.clientX;
+	var mouseY = e.clientY;
+	var el = DGE("SCoverlay");
+	el.style.left = mouseX-TT_size/2+"px";
+	el.style.top = mouseY-TT_size/4+"px";
+	RCmanager.updateLiveOverlay(el);
+}
+// Real Clear Statistics drawer
+function toggleSCD(){
+	var el = DRAWER_EL;
+	if(el.dataset.extended == "0")
+		el.dataset.extended = "1";
+	else
+		el.dataset.extended = "0";
+	calcDrawer();
+}
+function calcDrawer(){
+	var el = DRAWER_EL;
+	if(el.dataset.extended == "0"){
+		el.style.width = boardHeight/22+"px";
+		el.style.height = boardHeight/25+"px";
+	}
+	else{
+		el.style.width = boardHeight/1.5+"px";
+		el.style.height = boardHeight/2.5+"px";
+	}
+}
+
+// functions
+function filterPeriod(num)
+{
+	RCmanager.setPeriodFilter(num);
+}
+function scoreboardInit()
+{
+	uniqueID = readCookie("uniqueID");
+	if(uniqueID.length == 0){
+		uniqueID = Math.random();
+		writeCookie("uniqueID", uniqueID, 30);
+	}
+	console.log("Your unique ID: " + uniqueID);
+	checkpoint(1);
+	DRAWER_EL = DGE("SCD0");
+	checkpoint(2);
+	generateNumbers();
+	checkpoint(3);
+	// determine USING_SAVED
+	USING_SAVED = (window.location.href.indexOf("?game=") > -1);
+	if(USING_SAVED){
+		SAVE_PATH = window.atob(window.location.href.split("?game=")[1]);
+		DGE("topbar0").innerHTML = "Loading Saved game..."
+	}
+	checkpoint(5);
+	RCmanager = new RCManager();
+	RCmanager.element = DGE("graph_MAIN");
+	RCmanager.overlayElement = DGE("SCoverlay");
+	RCmanager.controls = DGE("graphControls");
+	checkpoint(6);
+	initializePFP();
+	checkpoint(8);
+	setTimeout(function(){scoreboardInit2();},1);
+	var XHR = new XMLHttpRequest();
+	XHR.open("GET","/visit.php?comment=scoreboardLoad");
+	XHR.send();
+
+}
+function scoreboardFocus()
+{
+	if(manager != undefined){
+		manager.clock[1] = null; // force clock redraw
+	}
+	if(RCmanager != undefined){
+		RCmanager.redraw();
+	}
+}
+function scoreboardInit2()
+{
+	checkpoint(9);
+	manager = new NumManager();
+	RCmanager.setOutput(manager);
+	setSport(1);
+	for(var x = 0; x < 20; x++)
+	{
+		manager.homePFP[x][0][manager.ELEMENT] = DGE("num_HPFP_PL"+x);
+		manager.homePFP[x][1][manager.ELEMENT] = DGE("num_HPFP_FL"+x);
+		manager.homePFP[x][2][manager.ELEMENT] = DGE("num_HPFP_PT"+x);
+		
+		manager.guestPFP[x][0][manager.ELEMENT] = DGE("num_GPFP_PL"+x);
+		manager.guestPFP[x][1][manager.ELEMENT] = DGE("num_GPFP_FL"+x);
+		manager.guestPFP[x][2][manager.ELEMENT] = DGE("num_GPFP_PT"+x);
+	}
+	checkpoint(10);
+	manager.messageElement = DGE("label_MSG");
+	manager.clock[manager.ELEMENT] = DGE("num_CLOCK");
+	manager.clock[manager.GRADIENT] = 0;
+	manager.home[manager.ELEMENT] = DGE("num_HOME");
+	manager.home[manager.GRADIENT] = 2;
+	manager.guest[manager.ELEMENT] = DGE("num_GUEST");
+	manager.guest[manager.GRADIENT] = 2;
+	manager.homef[manager.ELEMENT] = DGE("num_HOME_FOULS");
+	manager.homef[manager.GRADIENT] = 3;
+	manager.guestf[manager.ELEMENT] = DGE("num_GUEST_FOULS");
+	manager.guestf[manager.GRADIENT] = 3;
+	manager.period[manager.ELEMENT] = DGE("num_PERIOD");
+	manager.period[manager.GRADIENT] = 4;
+	manager.setClock(0);
+	manager.setHome(0);
+	manager.setGuest(0);
+	manager.setHomef(0);
+	manager.setGuestf(0);
+	manager.setPeriod(0);
+	checkpoint(11);
+	manager.update();
+	checkpoint(12);
+	if(!USING_SAVED)
+		setInterval(function(){tick();},1000);
+	scoreboardResize();
+	DGE("loadblock").style.opacity = "0";
+	setTimeout(function(){DGE("loadblock").style.display = "none";},2000);
+	if(!USING_SAVED)
+		setTimeout(function(){RCinit()},1);
+	else reloadSaved();
+}
+function reloadSaved()
+{
+	var rcr = new XMLHttpRequest;
+	rcr.addEventListener("load", RCLcallback);
+	rcr.addEventListener("load", function(){DGE("topbar0").style.opacity = 0;});
+	rcr.open("GET","/sitedb/realclear/?name="+SAVE_PATH+cacheKill(false));
+	rcr.send();
+}
+
+function initializePFP()
+{
+	var HPFP = "<div class='PFPheader'><div class='PFPh1'>PLAYER</div><div class='PFPh2'>FOULS</div><div class='PFPh3'>POINTS</div></div><div class='pfpspacerh'>";
+	for(var x = 0; x < 20; x++)
+	{
+		HPFP += "<div class='PFPblock'>"
+			HPFP+="<canvas id='num_HPFP_PL"+x+"' class='PFPdigit' data-num-type='SM'></canvas>"
+			HPFP+="<canvas id='num_HPFP_FL"+x+"' class='PFPdigit' data-num-type='SM'></canvas>"
+			HPFP+="<canvas id='num_HPFP_PT"+x+"' class='PFPdigit' data-num-type='SM'></canvas>"
+		HPFP+="</div>";
+	}
+	GPFP+="</div>";
+	DGE("homePFP").innerHTML = HPFP;
+	
+	var GPFP = "<div class='PFPheader'><div class='PFPh1'>PLAYER</div><div class='PFPh2'>FOULS</div><div class='PFPh3'>POINTS</div></div><div class='pfpspacerg'>";
+	for(var x = 0; x < 20; x++)
+	{
+		GPFP += "<div class='PFPblock'>"
+			GPFP+="<canvas id='num_GPFP_PL"+x+"' class='PFPdigit' data-num-type='SM'></canvas>"
+			GPFP+="<canvas id='num_GPFP_FL"+x+"' class='PFPdigit' data-num-type='SM'></canvas>"
+			GPFP+="<canvas id='num_GPFP_PT"+x+"' class='PFPdigit' data-num-type='SM'></canvas>"
+		GPFP+="</div>";
+	}
+	GPFP+="</div>";
+	DGE("guestPFP").innerHTML = GPFP;
+	checkpoint(7);
+}
+
+function RCLcallback(str = "")
+{
+	if(str.length > 0)
+		RCmanager.load(str);
+	else
+		RCmanager.load(this.responseText);
+	DGE("topbar0").style.opacity = "0.0";
+}
+function RCinit()
+{
+	var rcr = new XMLHttpRequest();
+	rcr.addEventListener("load", RCLcallback);
+	rcr.open("GET","score.realclear"+cacheKill(true));
+	rcr.send();
+}
+
+//FOOTBALL, VOLLEYBALL, BASKETBALL
+function setSport(sport)
+{
+	manager.sport = sport;
+	// homepfp, guestpfp, num_CLOCK, scorerow4
+	var pfpo=1,clko=1,r4o=1,pmd="block",scmw="",scml="",fstr="FOULS";
+	if(sport == 0){
+		pfpo=0;r4o=0;pmd="none";scmw="100%";scml="0%";
+		minAspect = 0.9; maxAspect = 1.3;
+	}
+	else if(sport == 1){
+		pfpo=0;clko=0;pmd="none";scmw="100%";scml="0%";fstr="WON";
+		minAspect = 0.9; maxAspect = 1.3;
+	}
+	else if(sport == 2){
+		minAspect = 1.5; maxAspect = 2.3;}
+	else console.error("Invalid sport: "+sport);
+	if(sport <= 2)
+	{
+		DGE("homePFP").style.opacity = ""+pfpo;
+		DGE("guestPFP").style.opacity = ""+pfpo;
+		DGE("num_CLOCK").style.opacity = ""+clko;
+		DGE("scorerow4").style.opacity = ""+r4o;
+		DGE("homePFP").style.display = pmd;
+		DGE("guestPFP").style.display = pmd;
+		DGE("scmainboard").style.width = scmw;
+		DGE("scmainboard").style.left = scml;
+		DGE("label_HOMEF").innerHTML = fstr;
+		DGE("label_GUESTF").innerHTML = fstr;
+		setTimeout(scoreboardResize,0);
+	}
+}
+
+
+function updateScoreboard(data)
+{
+	DGE("topbar0").style.opacity = 0;
+	var parsed = null;
+	try{
+		parsed = JSON.parse(data);
+	}catch(e){console.error("Error parsing JSON score data");}
+	if(parsed != null)
+	{
+		try{
+			try{
+				var msg = window.atob(parsed.message);
+				if(manager.message != msg)
+					manager.message = msg;
+			}
+			catch(e){
+				manager.message = "";
+			}
+			DGE("tf_HOME").innerHTML = parsed.homeName;
+			DGE("tf_GUEST").innerHTML = parsed.guestName;
+			DGE("title").innerHTML = parsed.homeName + " Vs. " + parsed.guestName;
+			RCmanager.homeName = parsed.homeName;
+			RCmanager.guestName = parsed.guestName;
+			RCmanager.setLiveClock(parsed.minutes*60+parsed.seconds, parsed.ticking);
+			manager.setHome(parsed.home);
+			manager.setGuest(parsed.guest);
+			manager.setHomef(parsed.homeFouls);
+			manager.setGuestf(parsed.guestFouls);
+			manager.setPeriod(parsed.period);
+			for(var x = 0; x < parsed.homePFP.length; x++)
+				manager.homePFP[Math.floor(x/3)][x%3][0] = parsed.homePFP[x];
+			for(var x = 0; x < parsed.guestPFP.length; x++)
+				manager.guestPFP[Math.floor(x/3)][x%3][0] = parsed.guestPFP[x];
+			manager.update();
+			setSport(parsed.gameType);
+		}catch(e){console.error(e);}
+	}
+}
+var clockLine = Array(10); // array of past seconds on clock
+function tick(){
+	if(ticks%5 == 0)
+	{
+		var scoreReq = new XMLHttpRequest();
+		var scoreTXT;
+		scoreReq.addEventListener("load", function(){
+			if(this.status == 304){
+				return;
+			}
+			scoreTXT = this.responseText.split("<$fileDivider>");
+			scoreRCR = scoreTXT[1];
+			scoreTXT = scoreTXT[0];
+			ticksSinceUpdate = 0;
+			lastScoreHASH = Sha256.hash(this.responseText);
+			updateScoreboard(scoreTXT);
+			RCLcallback(scoreRCR);
+			lastScoreTXT = scoreTXT;
+			lastScoreRCR = scoreRCR;
+		});
+		scoreReq.open("GET","delta.php?hash="+lastScoreHASH);
+		scoreReq.send();
+	}
+	if(ticks%30 == 0){
+		var viewReq = new XMLHttpRequest();
+		viewReq.open("GET", "live.php?id="+uniqueID);
+		viewReq.send();
+		viewReq.addEventListener("load", function(){
+			totalViewers = parseInt(this.responseText);
+			refreshViewerDisplay();
+		});
+	}
+	
+	if(ticksSinceUpdate > 60 && ticksSinceUpdate%10 < 1){ // 1:10 after last message, begin checking scorecam every 10 seconds
+		checkShowPCAS();
+	}
+	RCmanager.tick(manager);
+	
+	if(manager.sport == VOLLEYBALL)
+		document.title =  manager.format(manager.home[0],"NNM")+" - "+manager.format(manager.guest[0],"NNM")+" [Period "+manager.format(manager.period[0],"N")+"]";
+	else
+		document.title =  manager.format(manager.home[0],"NNM")+"-- "+manager.format(manager.clock[0],"NN:NN")+" --"+manager.format(manager.guest[0],"NNM");
+	ticks++;
+	ticksSinceUpdate++;
+}
+
+function refreshViewerDisplay(){
+	DGE("scviewercount").innerHTML = "Viewers Now: "+totalViewers;
+}
+
+var PCASDismissed = false;
+function checkShowPCAS(){
+	var xhr = new XMLHttpRequest();
+	var secsPCAS;
+	xhr.addEventListener("load", function(){
+		secsPCAS = parseInt(this.responseText);
+		if(secsPCAS != NaN && secsPCAS < 30 && !PCASDismissed){
+			DGE("PCASnot").style.visibility = "visible";
+		}
+		//console.log(secsPCAS);
+	});
+	xhr.open("GET", "/sendit/check.php");
+	xhr.send();
+}
+
+function PCASClick(){
+	window.open("/sendit", "_new");
+}
+function PCASClose(){
+	PCASDismissed = true;
+	DGE("PCASnot").style.opacity = "0.0";
+	setTimeout(500, function(){DGE("PCASnot").style.visibility = "hidden"});
+}
+
+function scoreboardResize()
+{
+	var currentAspect = window.innerWidth / window.innerHeight;
+	var targetAspect = currentAspect;
+	targetAspect = Math.max(minAspect, targetAspect);
+	targetAspect = Math.min(maxAspect, targetAspect);
+	try{
+		var el = DGE("scoreboardmain");
+		if(targetAspect > currentAspect)
+		{ 
+			el.style.width = "100vw";
+			el.style.height = 100*(currentAspect/targetAspect)+"%";
+			el.style.left = "0px";
+			el.style.top = (window.innerHeight-(currentAspect/targetAspect)*window.innerHeight)/2+"px";
+		}
+		else if(targetAspect < currentAspect)
+		{
+			el.style.height = "100vh";
+			el.style.width = 100*(targetAspect/currentAspect)+"%";
+			el.style.left = (window.innerWidth - (targetAspect/currentAspect)*window.innerWidth)/2+"px";
+			el.style.top = "0px";
+		}
+		else
+		{
+			el.style.width = "100vw";
+			el.style.height = "100vh";
+			el.style.left = "0px";
+			el.style.top = "0px";
+		}
+		boardWidth = el.clientWidth;
+		boardHeight = el.clientHeight;
+		
+		var el2 = DGE("scmainboard");
+		el2.style.fontSize = el2.offsetWidth/22 + "px";
+		el.style.fontSize = el.offsetWidth/34 + "px";
+	}
+	catch(e){console.error(e)}
+	RCmanager.redraw();
+	calcDrawer();
+}
+
+/* data-num-type reference:
+N is a Number.
+S is a Spacer. If it is a leading zero it is blanked.
+M is a Must-have number. If it is a leading zero it is kept as a zero.
+The characters :. are used literally */
+function refreshDisplay(el, str, grd)
+{
+	var numDigits = str.length;
+	el.width = NUM_WIDTH * numDigits * DIGIT_SPACING;
+	el.height = NUM_HEIGHT;
+	var ctx = el.getContext("2d");
+	for(var x = 0; x < numDigits; x++)
+	{
+		var chr = str.charAt(x);
+		var ind = NaN;
+		if(chr == ':')
+			ind = 10;
+		else if(chr == '.')
+			ind = 11;
+		else
+			ind = parseInt(str.charAt(x),10);
+		if(isNaN(ind))
+			ind = 12;
+		ctx.drawImage(SSnumbers[ind],Math.floor(x*NUM_WIDTH*DIGIT_SPACING+(NUM_WIDTH*(DIGIT_SPACING-1)/2)), 0);
+	}
+	var img = ctx.getImageData(0,0,el.width, el.height);
+	var pixels = img.data;
+	var len = pixels.length;
+	var tmp;
+	try{
+		for(var x = 0; x < len; x+=4)
+		{
+			tmp = pixels[x+3]*4;
+			pixels[x+3] = 255; // alpha
+			pixels[x] = gradient[grd][tmp];
+			pixels[x+1] = gradient[grd][tmp+1]
+			pixels[x+2] = gradient[grd][tmp+2];
+		}
+	}
+	catch(e){}
+	ctx.putImageData(img,0,0);
+}
+
+var SSnumbers = Array(13); // 0...9,:,.[blank]
+var gradient = Array(6);
+function generateNumbers()
+{
+	/*--------------------- Gradient Generation ---------------------*/
+	for(var x = 0; x < gradient.length; x++)
+		gradient[x] = new Array(1024);
+	
+	for(var x = 0; x < 256; x++)
+	{
+		gradient[0][x*4] = (x-127)*1.7;
+		gradient[0][x*4+1] = x*1.3;
+		gradient[0][x*4+2] = x*0.5;
+		
+		gradient[1][x*4] = x*3;
+		gradient[1][x*4+1] = x*2;
+		gradient[1][x*4+2] = (x-127)*1;
+		
+		gradient[2][x*4] = x*3;
+		gradient[2][x*4+1] = x*1.3;
+		gradient[2][x*4+2] = (x-191)*2;
+		
+		gradient[3][x*4] = x*3;
+		gradient[3][x*4+1] = x*2;
+		gradient[3][x*4+2] = x*1;
+		
+		gradient[4][x*4] = x*2;
+		gradient[4][x*4+1] = (x-100)*1;
+		gradient[4][x*4+2] = (x-150)*1;
+		
+		gradient[5][x*4] = (x-150)*1;
+		gradient[5][x*4+1] = x*1;
+		gradient[5][x*4+2] = x*2;
+		
+	}
+	checkpoint(3);
+	/*--------------------- Number Generation ---------------------*/
+	var canvas = document.createElement("canvas");
+	canvas.style.zIndex = "2";
+	//document.body.appendChild(canvas);
+	canvas.width = NUM_WIDTH;
+	canvas.height = NUM_HEIGHT;
+	
+	var ctx = canvas.getContext("2d");
+	var ch = canvas.height;
+	var cw = canvas.width;
+	var DXZ = cw/8; // Digit X 0
+	var DXM = cw*7/8; // Digit X Max
+	var DW = DXM-DXZ;
+	var DYZ = ch/8; // Digit Y 0
+	var DYM = ch*7/8; // Digit Y Max
+	var DH = DYM-DYZ;
+	
+	segs = Array(10);
+	segs[0] = [true,true,true,true,true,true,false];
+	segs[1] = [false,true,true,false,false,false,false];
+	segs[2] = [true,true,false,true,true,false,true];
+	segs[3] = [true,true,true,true,false,false,true];
+	segs[4] = [false,true,true,false,false,true,true];
+	segs[5] = [true,false,true,true,false,true,true];
+	segs[6] = [true,false,true,true,true,true,true];
+	segs[7] = [true,true,true,false,false,false,false];
+	segs[8] = [true,true,true,true,true,true,true];
+	segs[9] = [true,true,true,true,false,true,true];
+	segs[10] = [false,false,false,false,false,false,false];
+	for(var x = 0; x < 13; x++) // 0 1 2 3 4 5 6 7 8 9
+	{
+		ctx.fillStyle = "#000";
+		ctx.fillRect(0,0,cw,ch);
+		if(x < 10)
+			drawDisplay(ctx, DXZ, DYZ, DXM, DYM, segs[x]);
+		else if(x < 12){
+			ctx.fillStyle = "#800000";
+			if(x == 10)
+				ctx.fillRect(DXZ+DW*5/16,DYZ,DW/3,DH/4);
+			if(x == 10 || x == 11)
+				ctx.fillRect(DXZ+DW*5/16,DYM-DH/4,DW/3,DH/4);
+		}
+		else if(x == 12)
+			drawDisplay(ctx, DXZ, DYZ, DXM, DYM, segs[10]);
+		applyGradients(ctx, FADE, BLOW);
+		SSnumbers[x] = new Image();
+		SSnumbers[x].src = canvas.toDataURL("image/png");
+	}
+	checkpoint(4);
+}
+function applyGradients(ctx, fade, blow)
+{
+	var width = ctx.canvas.width;
+	var height = ctx.canvas.height;
+	var img = ctx.getImageData(0,0,width,height);
+	var data = img.data;
+	var pixels = Array(width*height);
+	var pixels2 = Array(width*height);
+	
+	for(var x = 0; x < data.length; x++)
+		pixels[x] = data[x*4];
+	
+	
+	for(var i = 0; i < 10; i++) // blend outer
+		for(var x = 1; x < width-1; x++)
+			for(var y = 1; y < height-1; y++)
+				pixels[x+y*width] = Math.max(Math.max(pixels[(x-1)+(y)*width],pixels[(x+1)+(y)*width],pixels[(x)+(y-1)*width],pixels[(x)+(y+1)*width])/fade,pixels[x+y*width]);
+			
+	for(var i = 0; i < 10; i++) // blend inner
+		for(var x = 1; x < width-1; x++)
+			for(var y = 1; y < height-1; y++)
+			{
+				if(pixels[x+y*width] > 120)
+					pixels[x+y*width] = Math.max(pixels[x+y*width],Math.min(pixels[(x-1)+(y-1)*width],pixels[(x+1)+(y+1)*width],pixels[(x+1)+(y-1)*width],pixels[(x-1)+(y+1)*width])*blow);
+			}
+			
+	for(var x = 0; x < data.length; x++)
+	{
+		data[x*4] = pixels[x]*256; // red is maxed
+		data[x*4+3] = pixels[x]; // alpha is relevant
+	}
+
+	
+	ctx.putImageData(img,0,0);
+}
+function drawDisplay(ctx, DXZ, DYZ, DXM, DYM, en)
+{
+	var DW = DXM-DXZ;
+	var DH = DYM-DYZ;
+	var FG = "#800000";
+	var BG = "#040000";
+	var SF = 1.4;
+	if(en[0])
+	ctx.fillStyle = FG;
+	else
+	ctx.fillStyle = BG;
+	drawSegH(ctx,DXZ,DYZ,DW,DH/8*SF); // A
+	if(en[1])
+		ctx.fillStyle = FG;
+	else
+		ctx.fillStyle = BG;
+	drawSegV(ctx,DXM,DYZ,DW/5*SF,DH/2); // B
+	if(en[2])
+		ctx.fillStyle = FG;
+	else
+		ctx.fillStyle = BG;
+	drawSegV(ctx,DXM,DYZ+DH/2,DW/5*SF,DH/2); // C
+	if(en[3])
+		ctx.fillStyle = FG;
+	else
+		ctx.fillStyle = BG;
+	drawSegH(ctx,DXZ,DYM,DW,DH/8*SF); // D
+	if(en[4])
+		ctx.fillStyle = FG;
+	else
+		ctx.fillStyle = BG;
+	drawSegV(ctx,DXZ,DYZ+DH/2,DW/5*SF,DH/2); // E
+	if(en[5])
+		ctx.fillStyle = FG;
+	else
+		ctx.fillStyle = BG;
+	drawSegV(ctx,DXZ,DYZ,DW/5*SF,DH/2); // F
+	if(en[6])
+		ctx.fillStyle = FG;
+	else
+		ctx.fillStyle = BG;
+	drawSegH(ctx,DXZ,(DYM+DYZ)/2,DW,DH/8*SF); // G
+}
+function drawSegH(ct, x, y, w, h)
+{
+	ct.beginPath();
+	ct.moveTo(x,y);
+	ct.lineTo(x+h/2,y+h/2);
+	ct.lineTo((x+w)-h/2,y+h/2);
+	ct.lineTo(x+w,y);
+	ct.lineTo((x+w)-h/2,y-h/2);
+	ct.lineTo(x+h/2,y-h/2);
+	ct.closePath();
+	ct.fill();
+}
+function drawSegV(ct,x,y,w,h)
+{
+	ct.beginPath();
+	ct.moveTo(x,y);
+	ct.lineTo(x-w/2,y+w/2);
+	ct.lineTo(x-w/2,(y+h)-w/2);
+	ct.lineTo(x,y+h);
+	ct.lineTo(x+w/2,(y+h)-w/2);
+	ct.lineTo(x+w/2,y+w/2);
+	ct.closePath();
+	ct.fill();
+}
+function DGE(str)
+{
+	return document.getElementById(str);
+}
+function HSV2RGB(h, s, v) {
+    var r, g, b, i, f, p, q, t;
+    i = Math.floor(h * 6);
+    f = h * 6 - i;
+    p = v * (1 - s);
+    q = v * (1 - f * s);
+    t = v * (1 - (1 - f) * s);
+    switch (i % 6) {
+        case 0: r = v, g = t, b = p; break;
+        case 1: r = q, g = v, b = p; break;
+        case 2: r = p, g = v, b = t; break;
+        case 3: r = p, g = q, b = v; break;
+        case 4: r = t, g = p, b = v; break;
+        case 5: r = v, g = p, b = q; break;
+    }
+    return {
+        r: Math.round(r * 255),
+        g: Math.round(g * 255),
+        b: Math.round(b * 255)
+    };
+}
+function C2S(v){
+	var c1 = v.r.toString(16);
+	var c2 = v.g.toString(16);
+	var c3 = v.b.toString(16);
+	if(c1.length < 2) c1 = "0"+c1;
+	if(c2.length < 2) c2 = "0"+c2;
+	if(c3.length < 2) c3 = "0"+c3;
+	
+	return "#"+c1+c2+c3;
+}
+
+function checkpoint(num){//console.log("Checkpoint "+num+" reached");
+}
+
+function cacheKill(first){
+	if(first)
+		return "?d=" + new Date();
+	return "&d=" + new Date();
+}
+
+function writeCookie(key, value, expiry) {
+	var date = new Date();
+	date.setTime(date.getTime()+expiry*86400000);
+	var expires = "expires="+date.toUTCString();
+	document.cookie = key+"="+value+";"+expires+";path=/";
+}
+
+function readCookie(name) {
+    name+="=";
+    var decodedCookie = decodeURIComponent(document.cookie);
+    var ca = decodedCookie.split(';');
+    for(var i=0;i<ca.length;i++) {
+        var c = ca[i];
+        while (c.charAt(0)==' ') {
+            c = c.substring(1);
+        }
+        if (c.indexOf(name)==0) {
+            return c.substring(name.length, c.length);
+        }
+    }
+    return "";
+}
+</script>
+		<script>function getRealClearSummary(mgr){
+	var scores = mgr.scores;
+	 // home guest minutes seconds homefouls guestfouls period
+	var scoreLen = scores.length;
+	if(scoreLen == 0)
+		return "No data yet";
+	var home = scores[scoreLen-1][0];
+	var guest = scores[scoreLen-1][1];
+	
+	var cInch=0; // home score increment
+	var cIncg=0; // guest score increment
+	var PcInch=0;
+	var PcIncg=0;
+	
+	var streaks = Array(0);
+	streaks.push(Array(0,0)); // team[home guest increment] streak
+	for(var x = 0; x < scoreLen; x++)
+	{
+		cScore = 0;
+		cInc = 0;
+		if(x > 0){
+			cInch = scores[x][0] - scores[x-1][0];
+			cIncg = scores[x][1] - scores[x-1][1];
+		}
+		else{
+			cInch = scores[x][0];
+			cIncg = scores[x][1];
+		}
+		if(x == 0 || cInch > PcInch || cIncg > PcIncg || scores[x][6] == scores[x-1][6]){
+			if(cInch > cIncg){
+				if(streaks[streaks.length-1][0] != 1){ // beginning of home streak
+					if(streaks[streaks.length-1][0] == 2)
+						streaks.push(Array(0,0));
+					streaks[streaks.length-1][0] = 1;
+				}
+				streaks[streaks.length-1][1] += cInch-cIncg;
+			}
+			if(cInch < cIncg){
+				if(streaks[streaks.length-1][0] != 2){ // beginning of guest streak
+					if(streaks[streaks.length-1][0] == 1)
+						streaks.push(Array(0,0));
+					streaks[streaks.length-1][0] = 2;
+				}
+				streaks[streaks.length-1][1] += cIncg-cInch;
+			}
+		}
+		PcInch = cInch;
+		PcIncg = cIncg;
+	}
+	
+	var streakText = "Last 5: ";
+	for(var x = Math.max(streaks.length-5,0); x < streaks.length; x++){
+		streakText+=(streaks[x][0]==1)?"H":"G";
+		streakText+=streaks[x][1];
+		if(x < streaks.length-1)
+			streakText+=", ";
+		else
+			streakText+=" [Current]";
+	}
+	var fsc = predictFinal(mgr);
+	var cStrName = streaks[streaks.length-1][0] == 1?mgr.homeName:mgr.guestName;
+	return "Current Streak: "+cStrName+" "+streaks[streaks.length-1][1]+"<br/>"+streakText//+
+	//"<br/><br/>Expected final score:<br/>"+mgr.homeName+" "+fsc.home+", "+mgr.guestName+" "+fsc.guest;// TODO predict final score
+	//"<br/><br/>Win probability:<br/>"+mgr.homeName+" "+fsc.homeWin+"%, "+mgr.guestName+" "+fsc.guestWin+"%";
+}
+function predictFinal(mgr){
+	var rtn = [];
+	var FINAL = 25;
+	var scores = mgr.scores;
+	var scoreLen = scores.length;
+	var home = scores[scoreLen-1][0];
+	var guest = scores[scoreLen-1][1];
+	if(home < 25 && guest < 25){ // normal case
+		var home2 = hypDeform(home,3*(Math.max(FINAL-guest,0)/FINAL));
+		var guest2 = hypDeform(guest,3*(Math.max(FINAL-home,0)/FINAL));
+		var scale = FINAL/Math.max(home2,guest2,1)
+		rtn.home = Math.round(home2*scale);
+		rtn.guest = Math.round(guest2*scale);
+	}
+	else{ // win-by-2 case
+		if(home == guest+1){ // home-ahead case
+			rtn.guest = guest+1;
+			rtn.home = rtn.guest+2;
+		}
+		else if(guest == home+1){ // guest-ahead case
+			rtn.home = home+1;
+			rtn.guest = rtn.home+2;
+		}
+		else if(home == guest){ // all-tied up case TODO check this
+			for(var x = scoreLen-1; x > 0; x--){
+				if(scores[x][0] > scores[x][1]){ // guest-scored-last case
+					rtn.home = home+1;
+					rtn.guest = rtn.home+2;
+					break;
+				}
+				if(scores[x][1] > scores[x][0]){ // home-scored-last case
+					rtn.guest = guest+1;
+					rtn.home = rtn.guest+2;
+					break;
+				}
+			}
+		}
+		else { // game-over case
+			rtn.home = home;
+			rtn.guest = guest;
+		}
+	}
+	rtn.homeWin = 50;
+	rtn.guestWin = 100-rtn.homeWin;
+	return rtn;
+}
+function hypDeform(x,r){
+	return Math.sqrt(x*x+r*r);
+}</script>
+		<style> body{
+	text-align: center;
+	background-color: #000;
+	
+	-webkit-user-select: none;
+   -moz-user-select: none;
+   user-select: none;
+	
+	font-weight: bold;
+	font-family: sans-serif;
+	overflow: hidden;
+	margin: 0px;
+}
+.scoreboard{
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	top: 0%;
+	left: 0%;
+}
+/*Globals*/
+.fullscr{
+	position: fixed;
+	top: 0%;
+	left: 0%;
+	width: 100vw;
+	height: 100vh;
+	z-index: 99999999999;
+	background: #000;
+	transition: opacity 0.6s;
+}
+.topbar{
+	font-size: 200%;
+	position: fixed;
+	width: 100%;
+	background: linear-gradient(rgba(0,255,255,0.8),rgba(54,70,255,0.3));
+	z-index: 4;
+	transition: opacity 1s;
+	text-shadow: 0px 0px 1vw #FFF, 0px 0px 1vw #FFF, 0px 0px 3vw #F00;
+	-webkit-pointer-events: none;
+	pointer-events: none;
+}
+.scbranding{
+	background: linear-gradient(#F20,#000,#0B0,#000,#04F);
+	position: absolute;
+	width: 30%;
+	height: 3.7%;
+	left: 35.5%;
+	top: 15%;
+	font-size: 50%;
+}
+canvas{
+	width: 100%;
+	height: 100%;
+}
+.snailoader{
+	position: fixed;
+	width: 5em;
+	height: 5em;
+	top: calc(50% - 5em);
+	top: -webkit-calc(50% - 2.5em);
+	left: calc(50% - 5em);
+	left: -webkit-calc(50% - 2.5em);
+	color: #000;
+	z-index: 16;
+	font-size: 5em;
+	animation: spin 2s infinite linear;
+}
+@keyframes spin{
+	0%{transform: rotate(360deg);}
+	100%{transform: rotate(0deg);}
+}
+
+/*Main sections*/
+.homepfp{
+	background-color: #F00;
+	width: 20%;
+	margin-top: auto;
+	border-right: 1px solid black;
+}
+.scoremain{
+	width: 60%;
+	left: 20%;
+}
+.guestpfp{
+	background-color: #02F;
+	width: 20%;
+	left: 80%;
+	border-left: 1px solid black;
+}
+.mainscsect{
+	height: 100%;
+	position: absolute;
+	overflow: hidden;
+}
+/*The scoreboard itself*/
+.scorerow0{
+	height: 4%;
+	background: linear-gradient(90deg, #F04, #D5D, #40F);
+}
+.scorerow1{
+	height: 16%;
+}
+.scorerow2{
+	height: 20%;
+	background: linear-gradient(#000 85%, #00F 90%, #FFF 95%, #FF0 100%);
+}
+.scorerow3{
+	height: 45%;
+	background: linear-gradient(#975, #555, #579);
+}
+.scorerow4{
+	height: 15%;
+	font-size: 60%;
+}
+.scorerow{
+	width: 100%;
+}
+
+/*Row globals*/
+.screlement{
+	display: block;
+	width: 100%;
+	height: inherit;
+	position: absolute;
+	font-size: 83%;
+}
+/*The viewer counter*/
+.viewercount{
+	top: 0px;
+	margin: auto;
+	font-size: 50%;
+}
+/*The top row*/
+.teamname1{
+	width: 34%;
+	background: linear-gradient(#F04,#F50,#F90);
+}
+.gameclock{
+	background-color: #012;
+	width: 33%;
+	left: 34%;
+}
+.teamname2{
+	background: linear-gradient(#40F,#05F,#09F);
+	width: 33%;
+	left: 67%;
+}
+.btext{
+	position: absolute;
+	bottom: 0px;
+	width: 100%;
+	text-shadow: 0px 0px 0.7vmin #FFF;
+}
+/*The second row*/
+.homescore{
+	background-color: #000;
+	width: 25%;
+}
+.scoreperiod{
+	left: 35%;
+	width: 30%;
+	font-size: 60%;
+}
+.pdlabel{
+	height: 33%;
+	font-size: 150%;
+	text-shadow: 0px 0px 0.7vmin #FFF;
+}
+.scoreperiod canvas{
+	position: relative;
+	width: 25%;
+	height: 67%;
+}
+.guestscore{
+	background-color: #000;
+	width: 25%;
+	left: 75%;
+}
+/*The third row*/
+.scoregraph{
+	cursor: none;
+}
+.graphControls{
+	position: absolute;
+	width: 6%;
+	height: 6%;
+	background-color: rgba(127,204,255,0.5);
+	transition: width 1.5s, height 1.5s;
+	transition-timing-function: cubic-bezier(1,.01,.68,.97);
+	overflow: hidden;
+}
+.graphControls:hover,.graphControls:active{
+	width: 100%;
+	height: 7%;
+	transition-delay: 0s;
+	transition: width 0.3s, height 0.3s;
+}
+.graphbtn{
+	color: #FBA;
+	padding-left: 3%;
+	padding-right: 3%;
+	transition: color 0.2s, background-color 0.2s;
+	text-decoration: underline;
+	cursor: pointer;
+}
+.graphbtn:hover{
+	color: #0F0;
+	background-color: #FFF;
+}
+/*The SC overlay*/
+.SCoverlay{
+	font-size: 45%;
+	pointer-events: none;
+	z-index: 2;
+	display: none;
+	position: fixed;
+	width: 100px;
+	height: 100px;
+	background-color: rgba(255,255,255,0.3);
+	text-shadow: 0px 0px 0.7vmin #0F5, 0px 0px 0.7vmin #0F5;
+}
+
+
+/*The fourth row*/
+.homefouls{
+	background-color: rgba(0,0,0,0.9);
+	width: 8%;
+}
+.guestfouls{
+	background-color: rgba(0,0,0,0.9);
+	width: 8%;
+	left: 92%;
+}
+.homeFLabel, .guestFLabel{
+	position: absolute;
+	display: inline-block;
+	width: 30%;
+	left: 9%;
+	text-shadow: 0px 0px 0.3vmin #FFF, 0px 0px 0.6vmin #FFF, 0px 0px 0.9vmin #FFF;
+	text-align: left;
+}
+.guestFLabel{
+	left: 61%;
+	text-align: right;
+}
+.messageLabel{
+	position: absolute;
+	width: 100%;
+	text-align: center;
+	text-shadow: 0px 0px 0.3vmin #FFF, 0px 0px 0.6vmin #FFF, 0px 0px 0.9vmin #FFF;
+}
+.playerFouls{
+	display: inline;
+	width: 30%;
+	background-color: %F00;
+}
+.graphInfo{
+	display: none;
+	font-size: 150%;
+	background: linear-gradient(rgba(255,0,0,0.5),rgba(255,20,45,0.5));
+	border: 1px solid #04F;
+	padding: 1%;
+}
+/*The PFP columns*/
+.PFPheader{
+	height: 4%;
+	text-align: center;
+	font-size: 39%;
+	text-shadow: 0px 0px 0.2vmin #FFF, 0px 0px 0.2vmin #FFF, 0px 0px 0.2vmin #FFF;
+	margin-left: 3%;
+	margin-right: 3%;
+}
+.PFPheader div{
+	display: inline-block;
+}
+.PFPh1{
+	height: 100%;
+	width: 34%;
+	text-align: left;
+}
+.PFPh2{
+	height: 100%;
+	width: 33%;
+	left: 34%;
+	text-align: center;
+}
+.PFPh3{
+	height: 100%;
+	width: 33%;
+	left: 67%;
+	text-align: right;
+}
+
+/*The bottom score-drawer*/
+.scoredrawer{
+	-webkit-pointer-events: none;
+	pointer-events: none;
+	position: absolute;
+	height: 4vmin;
+	width: 50%;
+	bottom: 0px;
+	left: 25%;
+	background: linear-gradient(rgba(255,0,0,0.5), rgba(204,204,192,0.5), rgba(0,0,255,0.5));
+	-webkit-pointer-events: none;
+	font-size: 50%;
+	border: 1px solid black;
+	text-shadow: 0px 0px 0.5vmin #FD0, 0px 0px 0.5vmin #FD0;
+	transition: height 0.5s, width 0.7s;
+}
+.scdheader{
+	-webkit-pointer-events: auto;
+	pointer-events: auto;
+	cursor: pointer;
+	text-shadow: none;
+	height: 4vmin;
+	width: 100%;
+	font-size: 125%;
+	background-color: rgba(255,255,255,0.7);
+	text-align: center;
+}
+
+/*Score Camera notification*/
+#PCASnot{
+	visibility: hidden;
+	position: absolute;
+	width: 80%;
+	top: 0px;
+	left: 10%;
+	background: linear-gradient(#F90, #FF0);
+	font-size: 90%;
+	border: 1px solid black;
+	transition: opacity 0.5s;
+	cursor: pointer;
+}
+.TNclose{
+	font-size: 70%;
+	text-decoration: underline;
+	background: linear-gradient(90deg, #F00, #7A3, #07F);
+	border: 2px solid black;
+	transition: color 0.3s;
+}
+.TNclose:hover{
+	color: #FFF;
+}
+
+/*Script-generated elements*/
+.PFPblock{
+	width: 96%;
+	height: calc(20% - 0.4%);
+	background-color: #000;
+	margin-left: 2%;
+	margin-right: 2%;
+}
+.PFPdigit{
+	display: inline-block;
+	width: 30%;
+	margin-right: 3.3333%;
+	background-color:rgba(0,0,0,0.2);
+	height: 60%;
+}
+.pfpspacerh{
+	height: 100%;
+	background-color: rgba(0,0,0,0.4);
+}
+.pfpspacerg{
+	height: 100%;
+	background-color: rgba(0,0,0,0.66);
+}
+
+ </style>
+		<script>
+		function verifyPage(){
+		var st = document.styleSheets;
+		var sc = document.scripts;
+		var bad = false;
+			for(var x = 0; x < st.length; x++)
+				if(st[x].cssRules.length == 0) bad = true;
+			try{
+			if(scoreboardInit == null) bad = true;}
+			catch(e){bad = true;}
+			if(bad){
+				var tt = window.name;
+				if(isNaN(parseInt(tt))) tt = 0; else tt = parseInt(tt);
+	
+				window.name = ""+(++tt);
+				if(tt%7 < 6){
+					console.log("Reload number"+tt); window.location.reload();}
+				else alert("Sorry!\n\nWe're having trouble loading the live scoreboard at the moment.\nPlease try again in a few minutes.")
+			}
+			else window.name = "0";
+		}
+		</script>
+	</head>
+	<body onload="verifyPage(); scoreboardInit()" onresize="scoreboardResize()" onfocus = "scoreboardFocus()">
+		<div class="fullscr" id="loadblock">
+		<img src="/images/icons/radio.gif" alt="loading.io">
+		</div>
+		<div class="topbar" id="topbar0"><span id="toptext0">Loading...</span></div>
+		<div class="scoreboard" id="scoreboardmain">
+			<div class="mainscsect homepfp" id="homePFP">
+			</div>
+			<div class="mainscsect scoremain" id="scmainboard">
+				<div class="scorerow scorerow0">
+					<div class="viewercount" id="scviewercount"></div>
+				</div>
+				<div class="scorerow scorerow1">
+					<div class="screlement teamname1">
+						<div class="btext" id="tf_HOME"></div>
+					</div>
+					<canvas style="height: 15%" class="screlement gameclock" id="num_CLOCK" data-num-type="SM:MM">
+					</canvas>
+					
+					<div class="screlement teamname2">
+						<div class="btext" id="tf_GUEST"></div>
+					</div>
+				</div>
+				<div class="scorerow scorerow2">
+					<canvas id="num_HOME" class="screlement homescore" data-num-type="NSM">
+					</canvas>
+					<div class="screlement scoreperiod">
+						<div class="pdlabel">period</div>
+						<canvas id="num_PERIOD" data-num-type="M"></canvas>
+					</div>
+					<canvas id="num_GUEST" class="screlement guestscore" data-num-type="NSM">
+					</canvas>
+				</div>
+				<div class="scorerow scorerow3">
+					<div class="graphControls" id="graphControls"></div>
+					<div class="SCoverlay" id="SCoverlay">%S: %S<br/><br/>%S: %s</div>
+					<canvas class="scoregraph" id="graph_MAIN" onMouseOver="graphEnter(event)" onMouseOut="graphLeave(event)" onMouseMove="graphMove(event)" ></canvas>
+				</div>
+				<div class="scorerow scorerow4" id='scorerow4'>
+					<canvas id="num_HOME_FOULS" class="screlement homefouls" data-num-type="NM">
+					</canvas>
+					<div id="label_HOMEF" class="homeFLabel">FOULS</div>
+					<span class="graphInfo" id="graphInfo"></span>
+						<!-- <canvas class="screlement playerFouls" id="num_PFLS" data-num-type="M:MM"></canvas> -->
+					<div class="messageLabel" id="label_MSG"> </div>
+					<div id="label_GUESTF" class="guestFLabel">FOULS</div>
+					<canvas id="num_GUEST_FOULS" class="screlement guestfouls" data-num-type="NM">
+					</canvas>
+				</div>
+				<div  id="SCD0" class="scoredrawer" data-extended="0">
+					<div class="scdheader" onClick="toggleSCD()">
+						&#8691; Real Clear Statistics
+					</div>
+					<div id="SCDC0">
+					</div>
+				</div>
+				<div id="PCASnot">
+					<div onclick="PCASClick()">
+						The score camera is up!<br/>
+						Click to visit the Scoreboard Camera
+					</div>
+					<div class="TNclose" onclick="PCASClose()">Close this notification</div>
+				</div>
+			</div>
+			<div class="mainscsect guestpfp" id="guestPFP">
+			</div>
+		</div>
+	</body>
+</html>
