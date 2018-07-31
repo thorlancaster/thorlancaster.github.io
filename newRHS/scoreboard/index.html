@@ -857,7 +857,7 @@ function reloadSaved()
 	var rcr = new XMLHttpRequest;
 	rcr.addEventListener("load", RCLcallback);
 	rcr.addEventListener("load", function(){DGE("topbar0").style.opacity = 0;});
-	rcr.open("GET","/newRHS/sitedb/realclear/"+SAVE_PATH+cacheKill(false));
+	rcr.open("GET","/newRHS/sitedb/realclear/"+SAVE_PATH);
 	rcr.send();
 }
 
