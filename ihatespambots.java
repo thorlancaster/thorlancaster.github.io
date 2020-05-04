@@ -52,7 +52,7 @@ public class BotClicker implements Runnable {
 	}
 	public void writeInstructions() {
 		writeAndEnter("If you're feeling inspired and have a JAVA IDE go do this to their other spam vids."
-				+ " I have my source code up at [TODO Pastebin]");
+				+ " I have my source code up at thorlancaster.github.io/ihatespambots.java");
 	}
 	
 	
